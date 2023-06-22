@@ -74,6 +74,13 @@ create = function(pageName, id){
 	created = true;
 }
 
+get = function(){
+	if (id.check[0] == global){
+		return variable_global_get(id.check[0]);
+	}
+	return id.check[0][$ id.check[1]];
+}
+
 beginStep = function(id){
 	id.hover = false;
 	id.pressed = false;
@@ -89,6 +96,9 @@ cursorIn = function(){
 }
 
 step = function(id){
+	if (id.toggle != id.get()){
+		id.toggle = id.get();	
+	}
 	id.xscaleMod = lerp(id.xscaleMod, 0, PXLUI_EASE_SPEED);
 	id.yscaleMod = lerp(id.yscaleMod, 0, PXLUI_EASE_SPEED);
 	
@@ -108,19 +118,11 @@ onhover = function(id){
 onclick = function(id){
 	id.toggle = !id.toggle;
 	
-	switch(id.checktype){
-		case PXLUI_VARIABLETYPE.GLOBAL:
-			variable_global_set(id.check[0],id.toggle);
-		break;
-		
-		case PXLUI_VARIABLETYPE.LOCAL:
-			variable_instance_set(id.check[0],id.check[1],id.toggle);
-		break;
-		
-		case PXLUI_VARIABLETYPE.STRUCT:
-			variable_struct_set(id.check[0],id.check[1],id.toggle);
-		break;
+	if (id.check[0] == global){
+		variable_global_set(id.check[0],id.toggle);
+		return;
 	}
+	id.check[0][$ id.check[1]] = id.toggle;
 }
 
 onhold = function(id){

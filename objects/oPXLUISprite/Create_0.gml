@@ -29,6 +29,9 @@ create = function(pageName, id){
 		case fa_right:
 			id.xalign = -id.xoffset-id.width;
 		break;
+		case "origin":
+			id.xalign = 0;
+		break;
 	}
 	switch(id.valign){
 		case fa_top:
@@ -39,6 +42,9 @@ create = function(pageName, id){
 		break;
 		case fa_bottom:
 			id.yalign = -id.yoffset-id.height;
+		break;
+		case "origin":
+			id.yalign = 0;
 		break;
 	}
 	

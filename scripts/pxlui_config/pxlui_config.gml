@@ -31,12 +31,6 @@ enum PXLUI_ORIENTATION{
 	HORIZONTAL
 }
 
-enum PXLUI_VARIABLETYPE{
-	GLOBAL,
-	LOCAL,
-	STRUCT
-}
-
 global.pxlui_theme = {
 	minimal:{
 		container: spr_pxlui_container,

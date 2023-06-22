@@ -1,5 +1,15 @@
 pxlui = new pxlui_create();
 
+function sine_wave(time, period, amplitude, midpoint) {
+    return sin(time * 2 * pi / period) * amplitude + midpoint;
+}
+
+function sine_between(time, period, minimum, maximum) {
+    var midpoint = mean(minimum, maximum);
+    var amplitude = maximum - midpoint;
+    return sine_wave(time, period, amplitude, midpoint);
+}
+
 checkbox1 = false;
 checkbox2 = false;
 
@@ -33,15 +43,15 @@ pxlui.add_page("main",[
 	
 	pxlui_text("52","35","Checkbox 1",,,fa_left),
 	pxlui_text("52","40","Checkbox 2",,,fa_left),
-	pxlui_checkbox("62", "35", PXLUI_VARIABLETYPE.LOCAL,[id,"checkbox1"],,,fa_left),
-	pxlui_checkbox("62", "40", PXLUI_VARIABLETYPE.LOCAL,[id,"checkbox2"],,,fa_left),
+	pxlui_checkbox("62", "35",[id,"checkbox1"],,,fa_left),
+	pxlui_checkbox("62", "40",[id,"checkbox2"],,,fa_left),
 	pxlui_text("66","35",[id,"checkbox1"]),
 	pxlui_text("66","40",[id,"checkbox2"]),
 	
 	pxlui_text("52","55","Slider 1",,,fa_left),
 	pxlui_text("52","60","Slider 2",,,fa_left),
-	pxlui_slider("62","55",PXLUI_VARIABLETYPE.LOCAL,[id,"slider1"],0,1,0.1,,,fa_left),
-	pxlui_slider("62","60",PXLUI_VARIABLETYPE.LOCAL,[id,"slider2"],0,10,0.5,,,fa_left),
+	pxlui_slider("62","55",[id,"slider1"],0,1,0.1,,,fa_left),
+	pxlui_slider("62","60",[id,"slider2"],0,10,0.5,,,fa_left),
 	pxlui_text("73","55",[id,"slider1"],,,fa_left),
 	pxlui_text("73","60",[id,"slider2"],,,fa_left),
 ]);

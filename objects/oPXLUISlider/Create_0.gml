@@ -92,35 +92,18 @@ set = function(_value) {
 	// determine ending x-coord of slider, used for drawing
 	tip_x = remap(value, minimum, maximum, x, x + width);
 	
-	switch(id.variableType){
-		case PXLUI_VARIABLETYPE.GLOBAL:
-			variable_global_set(id.variable[0],_value);
-		break;
-		
-		case PXLUI_VARIABLETYPE.LOCAL:
-			variable_instance_set(id.variable[0],id.variable[1],_value);
-		break;
-		
-		case PXLUI_VARIABLETYPE.STRUCT:
-			variable_struct_set(id.variable[0],id.variable[1],_value);
-		break;
+	if (id.variable[0] == global){
+		variable_global_set(id.variable[0], _value);
+		return;
 	}
+	id.variable[0][$ id.variable[1]] = _value;
 }
 
 get = function(){
-	switch(id.variableType){
-		case PXLUI_VARIABLETYPE.GLOBAL:
-			return variable_global_get(id.variable[0]);
-		break;
-		
-		case PXLUI_VARIABLETYPE.LOCAL:
-			return variable_instance_get(id.variable[0],id.variable[1]);
-		break;
-		
-		case PXLUI_VARIABLETYPE.STRUCT:
-			return variable_struct_get(id.variable[0],id.variable[1]);
-		break;
+	if (id.variable[0] == global){
+		return variable_global_get(id.variable[0]);
 	}
+	return id.variable[0][$ id.variable[1]];
 }
 	
 remap = function(val, min1, max1, min2, max2) {
@@ -143,6 +126,10 @@ step = function(id){
 	if (id.held){
 		var _val = remap(clamp(oPXLUICursor.xGui, id.x + id.xalign, id.x + id.xalign + id.width), id.x + id.xalign, id.x + id.xalign + id.width, id.minimum, id.maximum);
 		set(_val);
+	} else{
+		if (value != id.get()){
+			set(id.get());
+		}
 	}
 	
 	if (id.hover){
