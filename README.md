@@ -190,3 +190,4 @@ Credit to [@jujuadams](https://github.com/JujuAdams)
 [Input](https://github.com/JujuAdams/input) - Input system
 
 ##### This UI system is still a work in progress and optimization is required.
+##### This version of PXLUI has only been tested on LTS 2022.0.1.31. Other versions should work.
