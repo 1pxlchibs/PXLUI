@@ -39,3 +39,9 @@ function pxlui_get_gui_xscale(){
 function pxlui_get_gui_yscale(){
 	return global.pxlui_settings.ResH/global.pxlui_settings.UIResH;
 }
+
+function pxlui_debug_message(string){
+	if (PXLUI_DEBUG){
+		show_debug_message(string)	
+	}
+}

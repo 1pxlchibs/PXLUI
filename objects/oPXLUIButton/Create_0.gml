@@ -19,6 +19,7 @@ create = function(pageName, id){
 	id.alpha = 1;
 	
 	//Button Text
+	id.original_text = id.text;
 	id.scribbleText = scribble("["+id.font+"]"+id.text);
 	
 	//Values for position and scale animating
@@ -108,6 +109,30 @@ beginStep = function(id){
 	id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;
 	
 	id.font = global.pxlui_theme[$ global.pxlui_settings.theme].fonts.text1;
+	
+	if (is_array(id.text)){
+		var _value;
+		switch(id.text[0]){
+			case "global":
+				_value = variable_global_get(id.text[1]);
+			break;
+		
+			case "struct":
+				_value = variable_struct_get(id.text[1],id.text[2]);
+			break;
+		
+			default:
+				_value = variable_instance_get(id.text[0],id.text[1]);
+			break;
+		}
+		
+		if (id.original_text != _value){
+			id.scribbleText = scribble("["+id.font+"]"+string(_value));
+			id.original_text = _value;
+			
+			pxlui_debug_message("PXLUI: Text updated for element "+string(id.elementid));
+		}
+	} 
 }
 
 cursorIn = function(){

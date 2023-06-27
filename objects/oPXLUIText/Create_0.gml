@@ -37,6 +37,7 @@ create = function(pageName, id){
 	} else{
 		id.scribbleText = scribble("["+id.font+"]"+id.text);
 	}
+	id.original_text = id.text;
 	
 	created = true;
 }
@@ -59,10 +60,14 @@ beginStep = function(id){
 				_value = variable_instance_get(id.text[0],id.text[1]);
 			break;
 		}
-		id.scribbleText = scribble("["+id.font+"]"+string(_value));
-	} else{
-		id.scribbleText = scribble("["+id.font+"]"+id.text);
-	}
+		
+		if (id.original_text != _value){
+			id.scribbleText = scribble("["+id.font+"]"+string(_value));
+			id.original_text = _value;
+			
+			pxlui_debug_message("PXLUI: Text updated for element "+string(id.elementid));
+		}
+	} 
 }
 
 drawGUI = function(id){
