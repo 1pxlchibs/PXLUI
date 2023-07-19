@@ -56,9 +56,10 @@ function pxlui_create() constructor{
 			_step = element.step;	
 		}
 		
-		//creat the instance
+		//create the instance
 		var inst = instance_create_layer(t_x, t_y,_layer, element.object, element);
 		with(inst){
+			layerId = _layer;
 			create(pageName, inst);	
 			
 			if (_drawGUI != -1){
@@ -132,6 +133,18 @@ function pxlui_create() constructor{
 	function destroy(){
 		instance_destroy(pPXLUIElement);
 		unrender();
+	}
+	
+	///@description This destroys the specified renderer safely
+	function destroy_render(layerName){
+		var _layerId = layer_get_id(layerName);
+		if (_layerId != -1){
+			with(oPXLUIRenderer){
+				if(layerId = _layerId){
+					graceful_destroy = true;
+				}
+			}
+		}
 	}
 	
 	///@description Customize the way PXLUI renders, don't forget to add pxlui_draw_elements(); to make sure it draws the elements

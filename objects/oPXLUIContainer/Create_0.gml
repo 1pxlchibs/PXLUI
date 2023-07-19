@@ -83,13 +83,15 @@ create = function(pageName, id){
 			}
 
 			show_debug_message("element_created: "+string(t_x)+"/"+string(t_y));
-			var inst = instance_create_depth(t_x, t_y, id.depth_original - i-1, element.object, element);
+			var inst = instance_create_layer(t_x, t_y,  id.layerId, element.object, element);
 			array_push(id.children,inst);
 			with(inst){
+				layerId = other.layerId;
 				create(id.page, inst);
 				visible = false;
 				grandparent = other.parent;
 				parent = other.id;
+				
 			}
 		}
 	}
