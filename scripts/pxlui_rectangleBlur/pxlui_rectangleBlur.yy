@@ -1,7 +1,7 @@
 {
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
-  "name": "pxlui_group",
+  "name": "pxlui_rectangleBlur",
   "isDnD": false,
   "isCompatibility": false,
   "parent": {

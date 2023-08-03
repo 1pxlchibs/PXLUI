@@ -21,7 +21,7 @@ create = function(pageName, id){
 	if (is_array(id.text)){
 		var _value;
 		switch(id.text[0]){
-			case "global":
+			case global:
 				_value = variable_global_get(id.text[1]);
 			break;
 		
@@ -37,37 +37,23 @@ create = function(pageName, id){
 	} else{
 		id.scribbleText = scribble("["+id.font+"]"+id.text);
 	}
-	id.original_text = id.text;
 	
 	created = true;
 }
 
 beginStep = function(id){
-	id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.text.primary;
-	
 	if (is_array(id.text)){
 		var _value;
-		switch(id.text[0]){
-			case "global":
-				_value = variable_global_get(id.text[1]);
-			break;
-		
-			case "struct":
-				_value = variable_struct_get(id.text[1],id.text[2]);
-			break;
-		
-			default:
-				_value = variable_instance_get(id.text[0],id.text[1]);
-			break;
+		if (id.text[0] == global){
+			_value  = variable_global_get(id.text[0]);
+		} else{
+			_value = id.text[0][$ id.text[1]];
 		}
-		
-		if (id.original_text != _value){
-			id.scribbleText = scribble("["+id.font+"]"+string(_value));
-			id.original_text = _value;
-			
-			pxlui_debug_message("PXLUI: Text updated for element "+string(id.elementid));
-		}
-	} 
+
+		id.scribbleText = scribble("["+id.font+"]"+string(_value));
+	} else{
+		id.scribbleText = scribble("["+id.font+"]"+id.text);
+	}
 }
 
 drawGUI = function(id){

@@ -76,11 +76,17 @@ beginStep = function(id){
 }
 
 cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.x1collision, id.y + id.y1collision, id.x + id.x2collision, id.y + id.y2collision);	
+	var _x1 = id.x + id.x1collision;
+	var _x2 = id.x + id.x2collision;
+	var _y1 = id.y + id.y1collision;
+	var _y2 = id.y + id.y2collision;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, _x1, _y1, _x2, _y2);	
+	}	
 }
 
 set = function(_value) {
@@ -124,7 +130,7 @@ onhold = function(id){
 
 step = function(id){
 	if (id.held){
-		var _val = remap(clamp(oPXLUICursor.xGui, id.x + id.xalign, id.x + id.xalign + id.width), id.x + id.xalign, id.x + id.xalign + id.width, id.minimum, id.maximum);
+		var _val = remap(clamp(PXLUI_CURSOR.xGui, id.x + id.xalign, id.x + id.xalign + id.width), id.x + id.xalign, id.x + id.xalign + id.width, id.minimum, id.maximum);
 		set(_val);
 	} else{
 		if (value != id.get()){
@@ -147,14 +153,16 @@ onrelease = function(id){
 
 drawGUI = function(id){
 	var _color = id.color;
-	if (id.hover){
+	if (id.hover && id.interactable){
 		_color = id.color2;
 
 		if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
 		if (PXLUI_CLICK_CHECK) id.onhold(id);
 	}
 	
-	if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
+	if (id.interactable){
+		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
+	}
 	
 	draw_rectangle_color(id.x + id.xalign, id.y + id.yalign, id.tip_x + id.xalign, id.y + id.yalign + id.height, _color, _color, _color, _color, false); // value box	
 	draw_rectangle_color(id.x + id.xalign, id.y + id.yalign, id.x + id.xalign + id.width, id.y + id.yalign + id.height, id.color, id.color, id.color, id.color, true); // outer box

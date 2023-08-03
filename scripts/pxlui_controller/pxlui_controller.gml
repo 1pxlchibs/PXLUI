@@ -22,9 +22,9 @@ function pxlui_create() constructor{
 	
 	///@Description find an element using it's element ID, returns the instance id.
 	///@param elementid Element ID.
-	function find(elementid){
+	function find(_elementid){
 		with(pPXLUIElement){
-			if (id.elementid == elementid){
+			if (elementid == _elementid){
 				return id;
 			}
 		}
@@ -34,33 +34,42 @@ function pxlui_create() constructor{
 	///@param pageName Page name.
 	///@param element pxlui element.
 	///@param _layer layer to create it on.
-	function load_element(pageName, element, _layer){
+	function load_element(pageName, element, _layer, width_ref = global.pxlui_settings.UIResW, height_ref = global.pxlui_settings.UIResH, pxlui_ref = self){
 		//get the x and y
 		var t_x = element.xx;
 		var t_y = element.yy;
 		
 		//if string, position is percentage, so convert
 		if (is_string(element.xx)){
-			t_x = global.pxlui_settings.UIResW * (element.xx / 100);	
+			t_x = width_ref * (element.xx / 100);	
 		}
 		if (is_string(element.yy)){
-			t_y = global.pxlui_settings.UIResH * (element.yy / 100);	
+			t_y = height_ref * (element.yy / 100);	
 		}
 		
 		//If element has these variables, override the default ones.
-		var _drawGUI = -1, _step = -1;
+		var _drawGUI = -1, _step = -1, _onhover = -1, _onhold = -1;
 		if (variable_struct_exists(element,"drawGUI")){
 			_drawGUI = element.drawGUI;	
 		}
 		if (variable_struct_exists(element,"step")){
 			_step = element.step;	
 		}
+		if (variable_struct_exists(element,"onhover")){
+			_onhover = element.onhover;	
+		}
+		if (variable_struct_exists(element,"onhold")){
+			_onhold = element.onhold;	
+		}
 		
 		//create the instance
 		var inst = instance_create_layer(t_x, t_y,_layer, element.object, element);
 		with(inst){
+			//give the instance a reference to this system
+			pxlui = pxlui_ref;
+		
 			layerId = _layer;
-			create(pageName, inst);	
+			create(pageName, id);	
 			
 			if (_drawGUI != -1){
 				drawGUI = _drawGUI;	
@@ -68,12 +77,18 @@ function pxlui_create() constructor{
 			if (_step != -1){
 				step = _step;	
 			}
+			if (_onhover != -1){
+				onhover = _onhover;	
+			}
+			if (_onhold != -1){
+				onhold = _onhold;	
+			}
 			if (variable_struct_exists(element,"interactable")){
 				interactable = element.interactable;	
 			}
 		}
-		//give the instance a reference to this system
-		inst.pxlui = self;
+		
+		return inst;
 	}
 	
 	///@description Add a page to PXLUI populated with the elements supplied
@@ -81,7 +96,7 @@ function pxlui_create() constructor{
 	///@param pageArray Array of UI elements.
 	///@param [_layer] Layer to apply the UI elements to.
 	///@param [_depth] Depth of the layer.
-	function add_page(pageName, pageArray, _layer = "PXLUI_Layer", _depth = PXLUI_DEPTH_MIDDLE){
+	function add_page(pageName, pageArray, _layer = PXLUI_DEFAULT_LAYER, _depth = PXLUI_DEPTH_MIDDLE){
 		//add a page to the book
 		uiBook.pages[$ pageName] = pageArray;
 		uiBook.layers[$ pageName] = [_depth,_layer];
@@ -100,7 +115,7 @@ function pxlui_create() constructor{
 		var _layerName = layer_get_name(_layer);
 			
 		if (!instance_exists(oPXLUIRenderer)){
-			var _inst = instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,oPXLUIRenderer,{layerId: _layer});
+			var _inst = instance_create_depth(0,0,layer_get_depth(_layer),oPXLUIRenderer,{layerId: _layer});
 			if (uiBook.customRender[$ _layerName] != undefined){
 				_inst.pxlui_drawGUI = uiBook.customRender[$ _layerName];
 			}
@@ -112,15 +127,15 @@ function pxlui_create() constructor{
 				}
 			}
 			if (!_exists){
-				var _inst = instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,oPXLUIRenderer,{layerId: _layer});
+				var _inst = instance_create_depth(0,0,layer_get_depth(_layer),oPXLUIRenderer,{layerId: _layer});
 				if (uiBook.customRender[$ _layerName] != undefined){
 					_inst.pxlui_drawGUI = uiBook.customRender[$ _layerName];
 				}
 			}
 		}
 		
-		if (!instance_exists(oPXLUICursor)){
-			instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,oPXLUICursor);
+		if (!instance_exists(PXLUI_CURSOR)){
+			instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,PXLUI_CURSOR);
 		}
 	}
 	
@@ -170,11 +185,18 @@ function pxlui_create() constructor{
 			
 			for(var i = 0; i < array_length(_page); i++) {
 				var element = _page[i];
-				load_element(pageName, element, __layer);
+				if (is_array(element)){
+					for(var j = 0; j < array_length(element); j++) {
+						var _element = element[j];
+						load_element(pageName, _element, __layer);
+					}
+				} else{
+					load_element(pageName, element, __layer);
+				}
 			}
 		}
 		
-		render(__layer,pageName);
+		render(__layer);
 	}
 	
 	///@description Load specified page using a staggered effect
@@ -225,7 +247,7 @@ function pxlui_create() constructor{
 				if (currentInteractable.object_index = oPXLUIInputField){
 					if (currentInteractable.type) return;
 				}
-				
+
 				if (currentInteractable.object_index = oPXLUIScrollView){
 					with(currentInteractable){
 						if (layout = PXLUI_ORIENTATION.VERTICAL){
@@ -255,8 +277,8 @@ function pxlui_create() constructor{
 			
 			with(pPXLUIElement){
 				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (oPXLUICursor.yGui > id.y + PXLUI_NAV_PADDING){
-						ds_priority_add(other.uiPriority,id,distance_to_point(oPXLUICursor.xGui,oPXLUICursor.yGui));
+					if (PXLUI_CURSOR.yGui > id.y + PXLUI_NAV_PADDING){
+						ds_priority_add(other.uiPriority,id,point_distance(PXLUI_CURSOR.xGui,PXLUI_CURSOR.yGui,id.x, id.y));
 					}
 				}
 			}
@@ -269,7 +291,7 @@ function pxlui_create() constructor{
 				if (currentInteractable.object_index = oPXLUIInputField){
 					if (currentInteractable.type) return;
 				}
-				
+
 				if (currentInteractable.object_index = oPXLUIScrollView){
 					with(currentInteractable){
 						if (layout = PXLUI_ORIENTATION.VERTICAL){
@@ -299,8 +321,8 @@ function pxlui_create() constructor{
 			
 			with(pPXLUIElement){
 				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (oPXLUICursor.yGui < id.y - PXLUI_NAV_PADDING){
-						ds_priority_add(other.uiPriority,id,distance_to_point(oPXLUICursor.xGui,oPXLUICursor.yGui));
+					if (PXLUI_CURSOR.yGui < id.y - PXLUI_NAV_PADDING){
+						ds_priority_add(other.uiPriority,id,point_distance(PXLUI_CURSOR.xGui,PXLUI_CURSOR.yGui,id.x, id.y));
 					}
 				}
 			}
@@ -316,7 +338,7 @@ function pxlui_create() constructor{
 				}
 				
 				if (currentInteractable.object_index = oPXLUISlider) return;
-				
+
 				if (currentInteractable.object_index = oPXLUIScrollView){
 					with(currentInteractable){
 						if (layout = PXLUI_ORIENTATION.HORIZONTAL){
@@ -346,8 +368,8 @@ function pxlui_create() constructor{
 			
 			with(pPXLUIElement){
 				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (oPXLUICursor.xGui > id.x + PXLUI_NAV_PADDING){
-						ds_priority_add(other.uiPriority,id,distance_to_point(oPXLUICursor.xGui,oPXLUICursor.yGui));
+					if (PXLUI_CURSOR.xGui >  id.x + PXLUI_NAV_PADDING){
+						ds_priority_add(other.uiPriority,id,point_distance(PXLUI_CURSOR.xGui,PXLUI_CURSOR.yGui,id.x,id.y));
 					}
 				}
 			}
@@ -362,7 +384,7 @@ function pxlui_create() constructor{
 				}
 				
 				if (currentInteractable.object_index = oPXLUISlider) return;
-				
+
 				if (currentInteractable.object_index = oPXLUIScrollView){
 					with(currentInteractable){
 						if (layout = PXLUI_ORIENTATION.HORIZONTAL){
@@ -392,8 +414,8 @@ function pxlui_create() constructor{
 			
 			with(pPXLUIElement){
 				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (oPXLUICursor.xGui < id.x - PXLUI_NAV_PADDING){
-						ds_priority_add(other.uiPriority,id,distance_to_point(oPXLUICursor.xGui,oPXLUICursor.yGui));
+					if (PXLUI_CURSOR.xGui <  id.x - PXLUI_NAV_PADDING){
+						ds_priority_add(other.uiPriority,id,point_distance(PXLUI_CURSOR.xGui,PXLUI_CURSOR.yGui,id.x,id.y));
 					}
 				}
 			}
@@ -413,6 +435,11 @@ function pxlui_create() constructor{
 					case oPXLUIScrollView:
 						_x = _nearest.children[_nearest.currentElement].x+_nearest.x;
 						_y = _nearest.children[_nearest.currentElement].y+_nearest.y;
+					break;
+					
+					case oPXLUICard:
+						_x = _nearest.id.x;
+						_y = _nearest.id.y;
 					break;
 					
 					default:

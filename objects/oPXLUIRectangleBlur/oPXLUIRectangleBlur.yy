@@ -1,7 +1,7 @@
 {
   "resourceType": "GMObject",
   "resourceVersion": "1.0",
-  "name": "oPXLUIGroup",
+  "name": "oPXLUIRectangleBlur",
   "spriteId": null,
   "solid": false,
   "visible": true,
@@ -30,7 +30,7 @@
   "properties": [],
   "overriddenProperties": [],
   "parent": {
-    "name": "Wrappers",
-    "path": "folders/PXLUI/Objects/Wrappers.yy",
+    "name": "Primitive",
+    "path": "folders/PXLUI/Objects/Primitive.yy",
   },
 }

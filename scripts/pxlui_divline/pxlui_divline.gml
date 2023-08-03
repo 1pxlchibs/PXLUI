@@ -1,6 +1,6 @@
 // Script assets have changed for v2.3.0 see
 // https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
-function pxlui_divline(pos, orientation, width = 1, elementid = 0){
+function pxlui_divline(pos, orientation, width = 1, elementid = PXLUI_DEFAULT_ID){
 	var _x = 0;
 	var _y = 0;
 	switch(orientation){

@@ -32,6 +32,21 @@ create = function(pageName, id){
 		for(var i = 0; i < array_length(id.elements); i++) {
 			var element = id.elements[i];
 			
+			//If element has these variables, override the default ones.
+			var _drawGUI = -1, _step = -1, _onhover = -1, _onhold = -1;
+			if (variable_struct_exists(element,"drawGUI")){
+				_drawGUI = element.drawGUI;	
+			}
+			if (variable_struct_exists(element,"step")){
+				_step = element.step;	
+			}
+			if (variable_struct_exists(element,"onhover")){
+				_onhover = element.onhover;	
+			}
+			if (variable_struct_exists(element,"onhold")){
+				_onhold = element.onhold;	
+			}
+			
 			var inst = instance_create_depth(0, 0, id.depth_original - i-1, element.object, element);
 			array_push(id.children,inst);
 
@@ -41,6 +56,22 @@ create = function(pageName, id){
 				parent = other.id;
 				visible = false;
 				scrollview_number = i;
+				
+				if (_drawGUI != -1){
+					drawGUI = _drawGUI;	
+				}
+				if (_step != -1){
+					step = _step;	
+				}
+				if (_onhover != -1){
+					onhover = _onhover;	
+				}
+				if (_onhold != -1){
+					onhold = _onhold;	
+				}
+				if (variable_struct_exists(element,"interactable")){
+					interactable = element.interactable;	
+				}
 			}
 		}
 	}
@@ -65,11 +96,17 @@ create = function(pageName, id){
 }
 
 _cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.grandparent.x + id.parent.x, id.y + id.grandparent.y + id.parent.y, id.x + id.grandparent.x + id.parent.x + id.width + id.padding[0]*2, id.y + id.grandparent.y + id.parent.y + id.height + id.padding[1]*2);	
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.parent.x, id.y + id.parent.y, id.x + id.parent.x + id.width + id.padding[0]*2, id.y + id.parent.y + id.height + id.padding[1]*2);	
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x, id.y, id.x + id.width + id.padding[0]*2, id.y + id.height + id.padding[1]*2);	
+	var _x1 = id.x;
+	var _x2 = id.x + id.width + id.padding[0]*2;
+	var _y1 = id.y;
+	var _y2 = id.y + id.height + id.padding[1]*2;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, _x1, _y1, _x2, _y2);	
+	}
 }
 
 step = function(id){
@@ -148,7 +185,7 @@ set_dims = function(id){
 				if (i < array_length(id.children)){
 					var element = id.children[i];
 					
-					id.height = element.height + id.padding[1];
+					id.height = max(id.height,element.height + id.padding[1]);
 					id.width += element.width + id.padding[0];
 				}
             }
@@ -157,8 +194,8 @@ set_dims = function(id){
 			for(var i=0; i<id.amount; i++) {
 				if (i < array_length(id.children)){
 					var element = id.children[i];
-
-					id.width = element.width + id.padding[0];
+					
+					id.width = max(id.width,element.width + id.padding[0]);
 					id.height += element.height + id.padding[1];
 				}
 	        }

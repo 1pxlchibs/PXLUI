@@ -52,6 +52,5 @@ create = function(pageName, id){
 }
 
 drawGUI = function(id){
-	//if you have PPFX uncomment the line below
-	//area_draw_sprite_ext_mask(id.sprite,id.image,id.x+id.xalign,id.y+id.yalign,id.xscale,id.yscale,id.angle,id.color1,id.alpha,obj_post_process.ppfx_blur_id);
+	area_draw_sprite_ext_mask(id.sprite,id.image,id.x+id.xalign,id.y+id.yalign,id.xscale,id.yscale,id.angle,id.color1,id.alpha,obj_post_process.ppfx_blur_id);
 }

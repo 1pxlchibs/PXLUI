@@ -41,12 +41,14 @@ pxlui.add_page("main",[
 	
 	pxlui_text("88","20",[id,"counter"],,,fa_left),
 	
-	pxlui_text("52","35","Checkbox 1",,,fa_left),
-	pxlui_text("52","40","Checkbox 2",,,fa_left),
-	pxlui_checkbox("62", "35",[id,"checkbox1"],,,fa_left),
-	pxlui_checkbox("62", "40",[id,"checkbox2"],,,fa_left),
-	pxlui_text("66","35",[id,"checkbox1"]),
-	pxlui_text("66","40",[id,"checkbox2"]),
+	pxlui_container("30","70",100,100,,,,[
+		pxlui_text("52","35","Checkbox 1",,,fa_left),
+		pxlui_text("52","40","Checkbox 2",,,fa_left),
+		pxlui_checkbox("62", "35",[id,"checkbox1"],,,fa_left),
+		pxlui_checkbox("62", "40",[id,"checkbox2"],,,fa_left),
+		pxlui_text("66","35",[id,"checkbox1"]),
+		pxlui_text("66","40",[id,"checkbox2"]),
+	]),
 	
 	pxlui_text("52","55","Slider 1",,,fa_left),
 	pxlui_text("52","60","Slider 2",,,fa_left),

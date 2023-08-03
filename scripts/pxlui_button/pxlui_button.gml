@@ -8,7 +8,7 @@
 ///@param [valign] Vertical alignment of the button.
 ///@param [callback] Function to execute on button activation.
 ///@param [elementid] Identifier for use in element referencing.
-function pxlui_button(x, y, text, width = -1, height = -1, halign = fa_middle, valign = fa_middle, callback = function(){}, elementid = 0){
+function pxlui_button(x, y, text, width = -1, height = -1, halign = fa_middle, valign = fa_middle, callback = function(){}, elementid = PXLUI_DEFAULT_ID){
 	return {
 		object: oPXLUIButton,
 		xx : x,

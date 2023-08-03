@@ -13,20 +13,21 @@
 #macro PXLUI_LEFT input_check_repeat("left",,,1)
 #macro PXLUI_RIGHT input_check_repeat("right",,,1)
 
-#macro PXLUI_BACKSPACE input_check_repeat("cancel",,4,3)
+#macro PXLUI_BACKSPACE input_check_repeat("backspace",,4,3)
 
-#macro PXLUI_SCROLL_UP input_check("held_previous")
-#macro PXLUI_SCROLL_DOWN input_check("held_next")
+#macro PXLUI_SCROLL_UP input_check("scroll_up")
+#macro PXLUI_SCROLL_DOWN input_check("scroll_down")
 
 #macro PXLUI_EASE_SPEED 0.2
 
-#macro PXLUI_NAV_PADDING 16
+#macro PXLUI_NAV_PADDING 8
+#macro PXLUI_CURSOR oPXLUICursor
+#macro PXLUI_DEFAULT_ID "0"
+#macro PXLUI_DEFAULT_LAYER "PXLUI_LAYER"
 
 #macro PXLUI_DEPTH_BOTTOM -9000
 #macro PXLUI_DEPTH_MIDDLE -9100
 #macro PXLUI_DEPTH_TOP -9200
-
-#macro PXLUI_DEBUG 1
 
 enum PXLUI_ORIENTATION{
 	VERTICAL,
@@ -69,3 +70,6 @@ global.pxlui_settings = {
 	UIResW : 640,
 	UIResH : 360,
 }
+	
+	
+

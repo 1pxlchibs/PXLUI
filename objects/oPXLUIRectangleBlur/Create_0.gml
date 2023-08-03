@@ -53,6 +53,8 @@ create = function(pageName, id){
 }
 
 drawGUI = function(id){
+	area_draw_rect(id.x+id.xalign,id.y+id.yalign,id.width,id.height,10,10,obj_post_process.ppfx_blur_id);
+	
 	draw_set_alpha(id.alpha);
 	draw_rectangle_color(id.x+id.xalign,id.y+id.yalign,id.x+id.width+id.xalign,id.y+id.height+id.yalign,id.color1,id.color2,id.color3,id.color4,id.outline);
 	draw_set_alpha(1);

@@ -8,7 +8,7 @@ create = function(pageName, id){
 	id.grandparent = -1;
 	id.parent = -1;
 	
-	id.sprite = global.pxlui_theme[$ global.pxlui_settings.theme].container;
+	id.sprite = global.pxlui_theme[$ global.pxlui_settings.theme].slider;
 	id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
 	id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.text.primary;
 	id.color3 = global.pxlui_theme[$ global.pxlui_settings.theme].color.text.secondary;
@@ -108,11 +108,17 @@ beginStep = function(id){
 }
 
 cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.x1collision, id.y + id.y1collision, id.x + id.x2collision, id.y + id.y2collision);	
+	var _x1 = id.x + id.x1collision;
+	var _x2 = id.x + id.x2collision;
+	var _y1 = id.y + id.y1collision;
+	var _y2 = id.y + id.y2collision;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, _x1, _y1, _x2, _y2);	
+	}	
 }
 
 step = function(id){
@@ -145,7 +151,7 @@ onhover = function(id){
 
 onclick = function(id){
 	if (id.hover){	
-		oController.pxlui.currentInteractable = id;
+		pxlui.currentInteractable = id;
 		id.type = true;
 		keyboard_string = "";
 	} else{
@@ -179,7 +185,7 @@ drawGUI = function(id){
 
 	if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
 	
-	if (id.hover){	
+	if (id.hover && id.interactable){	
 		if (PXLUI_CLICK_CHECK) id.onhold(id);
 		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
 	}

@@ -1,5 +1,10 @@
 event_inherited();
 
+offset = {
+	x: 0,
+	y: 0
+};
+
 create = function(pageName, id){
 	id.page = pageName;
 	id.depth_original = depth;
@@ -27,21 +32,19 @@ create = function(pageName, id){
 	
 	switch(id.halign){
 		case fa_left:
-			id.xalign = id.width/2;
+			id.xalign = 0;
 			
 			id.x1collision = 0;
 			id.x2collision = id.width;
-			
-			id.htextAlign = id.width/2;
 		break;
 		case fa_middle:
-			id.xalign = 0;
+			id.xalign = -id.width/2;
 			
 			id.x1collision = -id.width/2;
 			id.x2collision = id.width/2;
 		break;
 		case fa_right:
-			id.xalign = -id.width/2;
+			id.xalign = -id.width;
 			
 			id.x1collision = -id.width;
 			id.x2collision = 0;
@@ -49,19 +52,19 @@ create = function(pageName, id){
 	}
 	switch(id.valign){
 		case fa_top:
-			id.yalign = id.height/2;
+			id.yalign = 0;
 			
 			id.y1collision = 0;
 			id.y2collision = id.height;
 		break;
 		case fa_middle:
-			id.yalign = 0;
+			id.yalign = -id.height/2;
 			
 			id.y1collision = -id.height/2;
 			id.y2collision = id.height/2;
 		break;
 		case fa_bottom:
-			id.yalign = -id.height/2;
+			id.yalign = -id.height;
 			
 			id.y1collision = -id.height;
 			id.y2collision = 0;
@@ -73,26 +76,12 @@ create = function(pageName, id){
 		for(var i = 0; i < array_length(id.elements); i++) {
 			var element = id.elements[i];
 			
-			var t_x = id.x1collision + element.xx;
-			var t_y = id.y1collision + element.yy;
-			if (is_string(element.xx)){
-				t_x = id.x1collision + id.width * (element.xx / 100);	
-			}
-			if (is_string(element.yy)){
-				t_y = id.y1collision + id.height * (element.yy / 100);	
-			}
-
-			show_debug_message("element_created: "+string(t_x)+"/"+string(t_y));
-			var inst = instance_create_layer(t_x, t_y,  id.layerId, element.object, element);
-			array_push(id.children,inst);
-			with(inst){
-				layerId = other.layerId;
-				create(id.page, inst);
-				visible = false;
-				grandparent = other.parent;
-				parent = other.id;
-				
-			}
+			var _inst = id.pxlui.load_element(id.page, element,id.layerId,id.width,id.height,id.pxlui);
+			_inst.parent = id;
+			_inst.grandparent = id.parent;
+			_inst.visible = false;
+		
+			array_push(id.children,_inst);
 		}
 	}
 	
@@ -106,11 +95,21 @@ beginStep = function(id){
 }
 
 cursorIn = function(){
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, x + x1collision, y + y1collision, x + x2collision, y + y2collision);
+	var _x1 = id.x + id.x1collision;
+	var _x2 = id.x + id.x2collision;
+	var _y1 = id.y + id.y1collision;
+	var _y2 = id.y + id.y2collision;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, _x1, _y1, _x2, _y2);	
+	}
 }
 
 _cursorIn = function(){
-	if (point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, x + x1collision, y + y1collision, x + x2collision, y + y1collision + 16) || drag){
+	if (point_in_rectangle(PXLUI_CURSOR.xGui, PXLUI_CURSOR.yGui, x + x1collision, y + y1collision, x + x2collision, y + y1collision + 16) || drag){
 		return true;	
 	}
 	return false;
@@ -127,42 +126,42 @@ onhover = function(id){
 onclick = function(id){	
 	id.drag = true;
 	
-	id.xdif = oPXLUICursor.xGui - id.x;
-	id.ydif = oPXLUICursor.yGui - id.y;
+	id.xdif = PXLUI_CURSOR.xGui - id.x;
+	id.ydif = PXLUI_CURSOR.yGui - id.y;
 }
 
 onhold = function(id){
 	if (id.drag){
-		id.x = oPXLUICursor.xGui - id.xdif;
-		id.y = oPXLUICursor.yGui - id.ydif;
+		id.x = PXLUI_CURSOR.xGui - id.xdif;
+		id.y = PXLUI_CURSOR.yGui - id.ydif;
 	
-		//for(var i = 0; i < array_length(id.children); i++){
-		//	var element = id.children[i];
+		for(var i = 0; i < array_length(id.children); i++){
+			var element = id.children[i];
 		
-		//	var t_x = id.x + element.xx;
-		//	var t_y = id.y + element.yy;
-		//	if (is_string(element.xx)){
-		//		t_x = id.x + id.width * (element.xx / 100);	
-		//	}
-		//	if (is_string(element.yy)){
-		//		t_y = id.y + id.height * (element.yy / 100);	
-		//	}
+			var t_x = id.x + element.xx;
+			var t_y = id.y + element.yy;
+			if (is_string(element.xx)){
+				t_x = id.x + id.width * (element.xx / 100);	
+			}
+			if (is_string(element.yy)){
+				t_y = id.y + id.height * (element.yy / 100);	
+			}
 			
-		//	if (element.object_index = oPXLUIScrollView){
-		//		t_x = id.x + element.xx + element.xalign;
-		//		t_y = id.y + element.yy + element.yalign;
+			if (element.object_index = oPXLUIScrollView){
+				t_x = id.x + element.xx + element.xalign;
+				t_y = id.y + element.yy + element.yalign;
 				
-		//		if (is_string(element.xx)){
-		//			t_x = id.x + id.width * (element.xx / 100) + element.xalign;	
-		//		}
-		//		if (is_string(element.yy)){
-		//			t_y = id.y + id.height * (element.yy / 100) + element.yalign;	
-		//		}
-		//	}
+				if (is_string(element.xx)){
+					t_x = id.x + id.width * (element.xx / 100) + element.xalign;	
+				}
+				if (is_string(element.yy)){
+					t_y = id.y + id.height * (element.yy / 100) + element.yalign;	
+				}
+			}
 			
-		//	element.x = t_x;
-		//	element.y = t_y;
-		//}
+			element.x = t_x;
+			element.y = t_y;
+		}
 	}
 }
 
@@ -173,17 +172,22 @@ onrelease = function(id){
 refresh = function(id){
 	if (!surface_exists(id.surf)) {
         id.surf = surface_create(id.width, id.height);
-    } else{
-		surface_set_target(id.surf);
-			draw_clear_alpha(c_black,0);
-
-			for(var i = 0; i < array_length(id.children); i++) {
-				var element = id.children[i];
-
-				element.drawGUI(element);
-			}
-		surface_reset_target();
-	}
+    }
+	
+	surface_set_target(id.surf);
+		draw_clear_alpha(c_black,0);
+		
+		var tar_x = offset.x;
+		var tar_y = offset.y;
+		
+		for(var i = 0; i < array_length(id.children); i++) {
+			var element = id.children[i];
+			
+			element.x = tar_x + element.x;
+			element.y = tar_y + element.y;
+			element.drawGUI(element);
+		}
+	surface_reset_target();
 }
 
 
@@ -200,8 +204,9 @@ drawGUI = function(id){
 		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
 	}
 	
-	draw_sprite_ext(id.sprite, 0, id.x + id.xalign,  id.y + id.yalign, 
+	draw_sprite_ext(id.sprite, 1, id.x + id.xalign, id.y + id.yalign,
 					id.width/sprite_get_width(id.sprite), id.height/sprite_get_height(id.sprite),
-					0,id.color,id.alpha);
-	draw_surface_part(id.surf,0,0,id.width,id.height,id.x,id.y);
+					0,id.color,1);
+	draw_surface_ext(id.surf, id.x + id.xalign, id.y + id.yalign, 1, 1, 0, c_white, id.alpha);
+	
 }
