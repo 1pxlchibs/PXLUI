@@ -37,7 +37,6 @@ function pxlui_get_gui_xscale(){
 }
 
 function pxlui_get_gui_yscale(){
-<<<<<<< Updated upstream
 	return global.pxlui_settings.ResH/global.pxlui_settings.UIResH;
 }
 
@@ -45,7 +44,6 @@ function pxlui_debug_message(string){
 	if (PXLUI_DEBUG){
 		show_debug_message(string)	
 	}
-=======
 	return global.pxlui_settings.ResH/PXLUI_UI_H;
 }
 
@@ -53,5 +51,4 @@ function pxlui_log(_log){
 	if (PXLUI_DEBUG){
 		show_debug_message(_log);
 	}	
->>>>>>> Stashed changes
 }

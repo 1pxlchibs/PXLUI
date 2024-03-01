@@ -30,10 +30,10 @@ enum PXLUI_CURVES{
 
 global.pxlui_theme = {
 	minimal:{
-		container: spr_pxlui_container,
-		card: spr_pxlui_container,
-		scrollview: spr_pxlui_container,
-		slider: spr_pxlui_container,
+		container: spr_pxlui_button,
+		card: spr_pxlui_button,
+		scrollview: spr_pxlui_button,
+		slider: spr_pxlui_button,
 		button: spr_pxlui_button,
 		checkbox: spr_pxlui_checkbox,
 		
