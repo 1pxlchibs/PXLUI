@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureGroup>
+  <texture scale="1" mipsToGenerate="0" texwidth="512" texheight="512">default_0.bz2</texture>
+  <tpe x="2" y="2" tpage="default_0">fntMonogram_24_fntMonogram_24.tpe</tpe>
+  <tpe x="2" y="262" tpage="default_0">scribble_fallback_font_scribble_fallback_font.tpe</tpe>
+  <tpe x="262" y="2" tpage="default_0">fntMonogram_12_fntMonogram_12.tpe</tpe>
+  <tpe x="262" y="134" tpage="default_0">spr_pxlui_scrollview_53b91f02-f8c0-4dd2-acc7-e4ce22f8008e.tpe</tpe>
+  <tpe x="262" y="170" tpage="default_0">spr_9slice_button_33a9ca80-0346-473b-a0a0-25d20d3412f8.tpe</tpe>
+  <tpe x="262" y="170" tpage="default_0">spr_9slice_button_d5e90c9f-bcc2-4972-a052-b8cecbdfab63.tpe</tpe>
+  <tpe x="262" y="198" tpage="default_0">spr_9slice_button_31a2c3f1-e2d6-4ef2-8f4b-32311d9c037c.tpe</tpe>
+  <tpe x="262" y="224" tpage="default_0">spr_9slice_button_df62d6dc-863f-4732-851f-e34f8ca6ca4d.tpe</tpe>
+  <tpe x="262" y="248" tpage="default_0">spr_9slice_button_9e3129e5-55df-4c4e-8e89-1c5c433e55e4.tpe</tpe>
+  <tpe x="262" y="248" tpage="default_0">spr_9slice_button_edb8d01d-30ac-4001-9ec4-4f46c89add16.tpe</tpe>
+  <tpe x="262" y="270" tpage="default_0">spr_pxlui_arrows_11f70368-ff55-40a3-a38a-c0c8251055bc.tpe</tpe>
+  <tpe x="262" y="290" tpage="default_0">spr_pxlui_arrows_d52c066c-277e-4e66-bde0-99ae0e88ddc7.tpe</tpe>
+  <tpe x="262" y="310" tpage="default_0">spr_pxlui_button_2c4261ba-4b03-4b48-88f4-ac64817c454a.tpe</tpe>
+  <tpe x="262" y="350" tpage="default_0">spr_pxlui_button_d52c066c-277e-4e66-bde0-99ae0e88ddc7.tpe</tpe>
+  <tpe x="262" y="330" tpage="default_0">spr_pxlui_checkbox_2c4261ba-4b03-4b48-88f4-ac64817c454a.tpe</tpe>
+  <tpe x="262" y="350" tpage="default_0">spr_pxlui_checkbox_d52c066c-277e-4e66-bde0-99ae0e88ddc7.tpe</tpe>
+  <tpe x="282" y="270" tpage="default_0">spr_pxlui_cursor_4498a06b-3dd0-4607-ad62-0c702c3eb066.tpe</tpe>
+  <tpe x="262" y="370" tpage="default_0">scribble_fallback_bulletpoint_16f4267b-6bb8-4d8f-a47a-c16693dce482.tpe</tpe>
+  <tpe x="286" y="224" tpage="default_0">sSlot_85fc54e7-2e3b-4556-9bc7-8990b11ec99d.tpe</tpe>
+  <tpe x="284" y="248" tpage="default_0">sInventory_85fc54e7-2e3b-4556-9bc7-8990b11ec99d.tpe</tpe>
+</TextureGroup>
