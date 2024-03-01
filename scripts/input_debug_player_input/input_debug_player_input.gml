@@ -1,3 +1,4 @@
+// Feather disable all
 /// Returns an array that contains bindings for each keyboard key, mouse button, and gamepad
 /// button/axis that the player is pressing. This function uses the same ignore/allow/source
 /// filter behaviour as the binding scan feature (see input_binding_scan_params_set())
@@ -108,7 +109,7 @@ function input_debug_player_input(_player_index = 0)
                 {
                     if (INPUT_MOUSE_ALLOW_SCANNING)
                     {
-                        if (_global.__mouse_allowed && !_global.__window_focus_block_mouse)
+                        if (_global.__mouse_allowed && _global.__game_input_allowed && !_global.__window_focus_block_mouse)
                         {
                             if (_filter_func(mb_left, _ignore_struct, _allow_struct)
                             && mouse_check_button(mb_left))

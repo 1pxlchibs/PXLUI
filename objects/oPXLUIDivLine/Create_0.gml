@@ -18,11 +18,11 @@ create = function(pageName, id){
 drawGUI = function(id){
 	switch(id.orientation){
 		case PXLUI_ORIENTATION.VERTICAL:
-			id.yy = global.pxlui_settings.UIResH;
+			id.yy = PXLUI_UI_H;
 		break;
 		
 		case PXLUI_ORIENTATION.HORIZONTAL:
-			id.xx = global.pxlui_settings.UIResW;
+			id.xx = PXLUI_UI_W;
 		break;
 	}
 	

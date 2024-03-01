@@ -82,17 +82,25 @@ get = function(){
 }
 
 beginStep = function(id){
-	id.hover = false;
-	id.pressed = false;
-	id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
+	if (!cursorIn()){
+		id.hover = false;
+		id.pressed = false;
+		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
+	}
 }
 
 cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, x +x1collision, y + y1collision, x + x2collision, y + y2collision);	
+	var _x1 = id.x + id.x1collision;
+	var _x2 = id.x + id.x2collision;
+	var _y1 = id.y + id.y1collision;
+	var _y2 = id.y + id.y2collision;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+	}	
 }
 
 step = function(id){
@@ -138,8 +146,8 @@ drawGUI = function(id){
 	draw_sprite_ext(id.sprite, id.toggle, id.x + id.xalign + id.xMod,  id.y + id.yalign + id.yMod, 
 					id.width/sprite_get_width(id.sprite) + id.xscaleMod, id.height/sprite_get_height(id.sprite) + id.yscaleMod,
 					0,id.color,id.alpha);			
-	if (id.hover){
-		if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
-		if (PXLUI_CLICK_CHECK) id.onhold(id);
+	if (id.hover && id.interactable){
+		if (input_check_pressed("item_active",player_index)) id.onclick(id);
+		if (input_check("item_active",player_index)) id.onhold(id);
 	}
 }

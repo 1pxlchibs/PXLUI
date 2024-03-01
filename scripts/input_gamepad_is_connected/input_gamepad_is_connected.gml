@@ -1,3 +1,4 @@
+// Feather disable all
 /// @desc    Returns whether the given (non-blocked) gamepad is connected
 /// @param   gamepadIndex
 
@@ -14,6 +15,8 @@ function input_gamepad_is_connected(_index)
     }
     
     if (!is_struct(_global.__gamepads[_index])) return false;
+    if (_global.__gamepads[_index].blacklisted) return false;
+    if (_global.__gamepads[_index].__disconnection_frame != undefined) return true;
     
     return gamepad_is_connected(_index);
 }

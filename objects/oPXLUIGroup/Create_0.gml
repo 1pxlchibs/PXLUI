@@ -81,10 +81,12 @@ create = function(pageName, id){
 				t_y = id.y1collision + id.height * (element.yy / 100);	
 			}
 
-			show_debug_message("element_created: "+string(t_x)+"/"+string(t_y));
+			pxlui_log("element_created: "+string(t_x)+"/"+string(t_y));
 			var inst = instance_create_depth(t_x, t_y, id.depth_original - i-1, element.object, element);
 			array_push(id.children,inst);
 			with(inst){
+				cursor_instance = other.cursor_instance;
+				player_index = other.player_index;
 				create(id.page, inst);
 				grandparent = other.parent;
 				parent = other.id;

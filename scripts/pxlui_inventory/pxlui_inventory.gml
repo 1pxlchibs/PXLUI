@@ -1,5 +1,6 @@
 // Script assets have changed for v2.3.0 see
 // https://help.yoyogames.com/hc/en-us/articles/360005277377 for more information
+<<<<<<< Updated upstream
 function pxlui_inventory(x, y, inventory_array, elementid = 0){
 	return {
 		object: oPXLUIInventory,
@@ -9,3 +10,14 @@ function pxlui_inventory(x, y, inventory_array, elementid = 0){
 		inventory : inventory_array
 	};
 }
+=======
+//function pxlui_inventory(x, y, inventory, elementid = PXLUI_DEFAULT_ID){
+//	return {
+//		object: oPXLUIInventory,
+//		xx : x,
+//		yy : y,
+//		inventory : inventory,
+//		elementid: elementid,
+//	};
+//}
+>>>>>>> Stashed changes

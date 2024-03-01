@@ -1,3 +1,4 @@
+// Feather disable all
 function __input_system_tick()
 {
     __INPUT_GLOBAL_STATIC_LOCAL  //Set static _global
@@ -94,7 +95,7 @@ function __input_system_tick()
     
     
     
-    #region Window focus
+    #region Application state
     
     if (INPUT_ON_PC && !INPUT_ON_WEB)
     {
@@ -141,6 +142,40 @@ function __input_system_tick()
             }
         }
     }
+
+    _global.__game_input_allowed = INPUT_ALLOW_OUT_OF_FOCUS || _global.__window_focus;
+    
+    _global.__overlay_focus = false;
+    
+    if (_global.__using_steamworks)
+    {
+        //Steam overlay
+        if (steam_is_overlay_activated())
+        {
+            _global.__overlay_focus = true;
+            _global.__game_input_allowed = false;
+        }
+    }
+    
+    if (_global.__use_debug_overlay_status)
+    {
+        //Debug overlay
+        if (is_debug_overlay_open())
+        {
+            _global.__overlay_focus = true;
+            
+            if (_global.__gamepad_tester_data.__block_input)
+            {
+                _global.__game_input_allowed = false;
+            }
+        }
+    }
+    
+    //Prevent restart thrashing
+    if ((_global.__current_time - _global.__restart_time) < 1000)
+    {
+        __input_clear_all();
+    }
     
     #endregion
     
@@ -157,8 +192,8 @@ function __input_system_tick()
         ++_m;
     }
     
-    //Block mouse capture when window state changes
-    if (_global.__mouse_capture && _global.__window_focus)
+    //Block mouse capture when focus state changes
+    if (_global.__mouse_capture && _global.__game_input_allowed)
     {
         if (__input_window_changed())
         {
@@ -174,118 +209,14 @@ function __input_system_tick()
         }
     }
     
-    if (_global.__mouse_capture && !_global.__mouse_capture_blocked)
+    if (INPUT_ALLOW_OUT_OF_FOCUS || !_global.__overlay_focus)
     {
-        if (_global.__window_focus)
+        if (_global.__mouse_capture && !_global.__mouse_capture_blocked)
         {
-            if (_global.__frame - _global.__mouse_capture_frame > 10)
+            if (_global.__window_focus)
             {
-                if (__INPUT_ON_WINDOWS)
+                if (_global.__frame - _global.__mouse_capture_frame > 10)
                 {
-                    _pointer_x = display_mouse_get_x() - window_get_x();
-                    _pointer_y = display_mouse_get_y() - window_get_y();  
-                }
-                else
-                {
-                    _pointer_x = device_mouse_raw_x(_global.__pointer_index);
-                    _pointer_y = device_mouse_raw_y(_global.__pointer_index);
-                }
-                
-                //Only bother updating each coordinate space if we've moved far enough in device space
-                //This presumes that we don't get better than 1px resolution in device space
-                if ((abs(_pointer_x - window_get_width()/2)  >= 1)
-                ||  (abs(_pointer_y - window_get_height()/2) >= 1))
-                {
-                    var _m = 0;
-                    repeat(INPUT_COORD_SPACE.__SIZE)
-                    {
-                        switch(_m)
-                        {
-                            case INPUT_COORD_SPACE.ROOM:
-                                if (view_enabled && view_visible[0])
-                                {
-                                    var _camera = view_camera[0];
-                                    var _old_x = camera_get_view_width(_camera)/2;
-                                    var _old_y = camera_get_view_height(_camera)/2;
-                                }
-                                else
-                                {
-                                    var _old_x = room_width/2;
-                                    var _old_y = room_height/2;
-                                }
-                                
-                                var _pointer_x = device_mouse_x(_global.__pointer_index);
-                                var _pointer_y = device_mouse_y(_global.__pointer_index);
-                            break;
-                            
-                            case INPUT_COORD_SPACE.GUI:
-                                var _old_x     = display_get_gui_width()/2;
-                                var _old_y     = display_get_gui_height()/2;
-                                var _pointer_x = device_mouse_x_to_gui(_global.__pointer_index);
-                                var _pointer_y = device_mouse_y_to_gui(_global.__pointer_index);
-                            break;
-                            
-                            case INPUT_COORD_SPACE.DEVICE:
-                                var _old_x = window_get_width()/2;
-                                var _old_y = window_get_height()/2;
-                                
-                                if (__INPUT_ON_WINDOWS)
-                                {
-                                    _pointer_x = display_mouse_get_x() - window_get_x();
-                                    _pointer_y = display_mouse_get_y() - window_get_y();  
-                                }
-                                else
-                                {
-                                    _pointer_x = device_mouse_raw_x(_global.__pointer_index);
-                                    _pointer_y = device_mouse_raw_y(_global.__pointer_index);
-                                }
-                            break;
-                        }
-                        
-                        var _dx = (_pointer_x - _old_x)*_global.__mouse_capture_sensitivity;
-                        var _dy = (_pointer_y - _old_y)*_global.__mouse_capture_sensitivity;
-                        
-                        //Only detect movement in the display coordinate space so that moving a room's view, or moving the window, doesn't trigger movement
-                        if ((_m == INPUT_COORD_SPACE.DEVICE) && (_dx*_dx + _dy*_dy > INPUT_MOUSE_MOVE_DEADZONE*INPUT_MOUSE_MOVE_DEADZONE)) _moved = true;
-                        
-                        _global.__pointer_dx[@ _m] = _dx;
-                        _global.__pointer_dy[@ _m] = _dy;
-                        
-                        _global.__pointer_x[@ _m] += _dx;
-                        _global.__pointer_y[@ _m] += _dy;
-                        
-                        ++_m;
-                    }
-                }
-            }
-            
-            //Recenter mouse cursor
-            window_mouse_set(window_get_width()/2, window_get_height()/2);
-        }
-    }
-    else if (_global.__window_focus || INPUT_ALLOW_OUT_OF_FOCUS || __INPUT_ON_MACOS)
-    {
-        var _m = 0;
-        repeat(INPUT_COORD_SPACE.__SIZE)
-        {
-            var _old_x = _global.__pointer_x[_m];
-            var _old_y = _global.__pointer_y[_m];
-            var _pointer_x = _old_x;
-            var _pointer_y = _old_y;
-            
-            switch(_m)
-            {
-                case INPUT_COORD_SPACE.ROOM:
-                    _pointer_x = device_mouse_x(_global.__pointer_index);
-                    _pointer_y = device_mouse_y(_global.__pointer_index);
-                break;
-                
-                case INPUT_COORD_SPACE.GUI:
-                    _pointer_x = device_mouse_x_to_gui(_global.__pointer_index);
-                    _pointer_y = device_mouse_y_to_gui(_global.__pointer_index);
-                break;
-                
-                case INPUT_COORD_SPACE.DEVICE:
                     if (__INPUT_ON_WINDOWS)
                     {
                         _pointer_x = display_mouse_get_x() - window_get_x();
@@ -296,19 +227,130 @@ function __input_system_tick()
                         _pointer_x = device_mouse_raw_x(_global.__pointer_index);
                         _pointer_y = device_mouse_raw_y(_global.__pointer_index);
                     }
-                break;
+                
+                    //Only bother updating each coordinate space if we've moved far enough in device space
+                    //This presumes that we don't get better than 1px resolution in device space
+                    if ((abs(_pointer_x - window_get_width()/2)  >= 1)
+                    ||  (abs(_pointer_y - window_get_height()/2) >= 1))
+                    {
+                        var _m = 0;
+                        repeat(INPUT_COORD_SPACE.__SIZE)
+                        {
+                            switch(_m)
+                            {
+                                case INPUT_COORD_SPACE.ROOM:
+                                    if (view_enabled && view_visible[0])
+                                    {
+                                        var _camera = view_camera[0];
+                                        var _viewW = camera_get_view_width(_camera);
+                                        var _viewH = camera_get_view_height(_camera);
+                                        var _viewX = camera_get_view_x(_camera);
+                                        var _viewY = camera_get_view_y(_camera);
+                                        var _old_x = _viewX + _viewW/2;
+                                        var _old_y = _viewY + _viewH/2;
+                                    }
+                                    else
+                                    {
+                                        var _old_x = room_width/2;
+                                        var _old_y = room_height/2;
+                                    }
+                                
+                                    var _pointer_x = device_mouse_x(_global.__pointer_index);
+                                    var _pointer_y = device_mouse_y(_global.__pointer_index);
+                                break;
+                            
+                                case INPUT_COORD_SPACE.GUI:
+                                    var _old_x     = display_get_gui_width()/2;
+                                    var _old_y     = display_get_gui_height()/2;
+                                    var _pointer_x = device_mouse_x_to_gui(_global.__pointer_index);
+                                    var _pointer_y = device_mouse_y_to_gui(_global.__pointer_index);
+                                break;
+                            
+                                case INPUT_COORD_SPACE.DEVICE:
+                                    var _old_x = window_get_width()/2;
+                                    var _old_y = window_get_height()/2;
+                                
+                                    if (__INPUT_ON_WINDOWS)
+                                    {
+                                        _pointer_x = display_mouse_get_x() - window_get_x();
+                                        _pointer_y = display_mouse_get_y() - window_get_y();  
+                                    }
+                                    else
+                                    {
+                                        _pointer_x = device_mouse_raw_x(_global.__pointer_index);
+                                        _pointer_y = device_mouse_raw_y(_global.__pointer_index);
+                                    }
+                                break;
+                            }
+                        
+                            var _dx = (_pointer_x - _old_x)*_global.__mouse_capture_sensitivity;
+                            var _dy = (_pointer_y - _old_y)*_global.__mouse_capture_sensitivity;
+                        
+                            //Only detect movement in the display coordinate space so that moving a room's view, or moving the window, doesn't trigger movement
+                            if ((_m == INPUT_COORD_SPACE.DEVICE) && (_dx*_dx + _dy*_dy > INPUT_MOUSE_MOVE_DEADZONE*INPUT_MOUSE_MOVE_DEADZONE)) _moved = true;
+                        
+                            _global.__pointer_dx[@ _m] = _dx;
+                            _global.__pointer_dy[@ _m] = _dy;
+                        
+                            _global.__pointer_x[@ _m] += _dx;
+                            _global.__pointer_y[@ _m] += _dy;
+                        
+                            ++_m;
+                        }
+                    }
+                }
+            
+                //Recenter mouse cursor
+                window_mouse_set(window_get_width()/2, window_get_height()/2);
             }
+        }
+        else if (_global.__window_focus || INPUT_ALLOW_OUT_OF_FOCUS || __INPUT_ON_MACOS)
+        {
+            var _m = 0;
+            repeat(INPUT_COORD_SPACE.__SIZE)
+            {
+                var _old_x = _global.__pointer_x[_m];
+                var _old_y = _global.__pointer_y[_m];
+                var _pointer_x = _old_x;
+                var _pointer_y = _old_y;
             
-            //Only detect movement in the display coordinate space so that moving a room's view, or moving the window, doesn't trigger movement
-            if ((_m == INPUT_COORD_SPACE.DEVICE) && (point_distance(_old_x, _old_y, _pointer_x, _pointer_y) > INPUT_MOUSE_MOVE_DEADZONE)) _moved = true;
+                switch(_m)
+                {
+                    case INPUT_COORD_SPACE.ROOM:
+                        _pointer_x = device_mouse_x(_global.__pointer_index);
+                        _pointer_y = device_mouse_y(_global.__pointer_index);
+                    break;
+                
+                    case INPUT_COORD_SPACE.GUI:
+                        _pointer_x = device_mouse_x_to_gui(_global.__pointer_index);
+                        _pointer_y = device_mouse_y_to_gui(_global.__pointer_index);
+                    break;
+                
+                    case INPUT_COORD_SPACE.DEVICE:
+                        if (__INPUT_ON_WINDOWS)
+                        {
+                            _pointer_x = display_mouse_get_x() - window_get_x();
+                            _pointer_y = display_mouse_get_y() - window_get_y();  
+                        }
+                        else
+                        {
+                            _pointer_x = device_mouse_raw_x(_global.__pointer_index);
+                            _pointer_y = device_mouse_raw_y(_global.__pointer_index);
+                        }
+                    break;
+                }
             
-            _global.__pointer_dx[@ _m] = _pointer_x - _old_x;
-            _global.__pointer_dy[@ _m] = _pointer_y - _old_y;
+                //Only detect movement in the display coordinate space so that moving a room's view, or moving the window, doesn't trigger movement
+                if ((_m == INPUT_COORD_SPACE.DEVICE) && (point_distance(_old_x, _old_y, _pointer_x, _pointer_y) > INPUT_MOUSE_MOVE_DEADZONE)) _moved = true;
             
-            _global.__pointer_x[@ _m] = _pointer_x;
-            _global.__pointer_y[@ _m] = _pointer_y;
+                _global.__pointer_dx[@ _m] = _pointer_x - _old_x;
+                _global.__pointer_dy[@ _m] = _pointer_y - _old_y;
             
-            ++_m;
+                _global.__pointer_x[@ _m] = _pointer_x;
+                _global.__pointer_y[@ _m] = _pointer_y;
+            
+                ++_m;
+            }
         }
     }
     
@@ -353,9 +395,15 @@ function __input_system_tick()
                     keyboard_key_release(vk_lalt);
                     keyboard_key_release(vk_ralt);
                 }
+
+                if (keyboard_check(0xE6) && !keyboard_check_pressed(0xE6))
+                {
+                    //Unstick OEM key (Power button on Steam Deck)
+                    keyboard_key_release(0x0E6);
+                }
             break;            
             case "apple_web": //This case applies on iOS, tvOS, and MacOS
-                if (keyboard_check_released(92) || keyboard_check_released(93))
+                if (keyboard_check_released(vk_lmeta) || keyboard_check_released(vk_rmeta))
                 {
                     //Meta release sticks every key pressed during hold
                     //This is "the nuclear option", but the problem is severe
@@ -438,53 +486,51 @@ function __input_system_tick()
             var _gamepad = _global.__gamepads[_g];
             if (is_struct(_gamepad))
             {
-                if (gamepad_is_connected(_g))
+                var _connected = gamepad_is_connected(_g);
+                if (_connected)
                 {
-                    if ((os_type == os_switch) && (_gamepad.description != gamepad_get_description(_g)))
+                    with (_gamepad)
                     {
-                        //When Switch L+R assignment is used to pair two gamepads we won't see a normal disconnection/reconnection
-                        //Instead we have to check for changes in the description to see if state has changed
-                        _gamepad.discover();
-                    }
-                    else
-                    {
-                        if (_steam_handles_changed) 
+                        if ((os_type == os_switch) && (description != gamepad_get_description(_g)))
                         {
-                            with (_gamepad)
+                            //When Switch L+R assignment is used to pair two gamepads we won't see a normal disconnection/reconnection
+                            //Instead we have to check for changes in the description to see if state has changed
+                            discover();
+                        }
+                        else
+                        {
+                            if (_steam_handles_changed) 
                             {
                                 virtual_set();
                                 led_set();
                             }
                         }
-                        
-                        _gamepad.tick();
                     }
                 }
-                else
+                
+                var _sustain_connection = _gamepad.tick(_connected);
+                if not (_sustain_connection)
                 {
                     //Remove our gamepad handler
                     if (!__INPUT_SILENT) __input_trace("Gamepad ", _g, " disconnected");
-                    
-                    gamepad_set_vibration(_global.__gamepads[@ _g].index, 0, 0);
-                    _global.__gamepads[@ _g] = undefined;
-                    
-                    //Also report gamepad changes for any active players
-                    if ((_global.__source_mode != INPUT_SOURCE_MODE.MIXED) && (_global.__source_mode != INPUT_SOURCE_MODE.MULTIDEVICE))
-                    {                    
-                        var _p = 0;
-                        repeat(INPUT_MAX_PLAYERS)
-                        {
-                            with(_global.__players[_p])
-                            {
-                                if (__source_contains(INPUT_GAMEPAD[_g]))
-                                {
-                                    __input_trace("Player ", _p, " gamepad disconnected");
-                                    __source_remove(INPUT_GAMEPAD[_g]);
-                                }
-                            }
                         
-                            ++_p;
+                    gamepad_set_vibration(_global.__gamepads[_g].index, 0, 0);
+                    _global.__gamepads[@ _g] = undefined;
+                        
+                    //Also report gamepad changes for any active players
+                    var _p = 0;
+                    repeat(INPUT_MAX_PLAYERS)
+                    {
+                        with(_global.__players[_p])
+                        {
+                            if (__source_contains(INPUT_GAMEPAD[_g]))
+                            {
+                                __input_trace("Player ", _p, " gamepad disconnected");
+                                __source_remove(INPUT_GAMEPAD[_g]);
+                            }
                         }
+                        
+                        ++_p;
                     }
                 }
             }
@@ -506,20 +552,7 @@ function __input_system_tick()
     #endregion
     
     
-    
-    #region Players
-    
-    var _p = 0;
-    repeat(INPUT_MAX_PLAYERS)
-    {
-        _global.__players[_p].tick();
-        ++_p;
-    }
-    
-    #endregion
-    
-    
-    
+
     #region Virtual Buttons
     
     //Reorder virtual buttons if necessary, from highest priority to lowest
@@ -542,7 +575,7 @@ function __input_system_tick()
         _global.__virtual_order_dirty = false;
         array_sort(_global.__virtual_array, function(_a, _b)
         {
-            return _a.__priority - _b.__priority;
+            return sign(_b.__priority - _a.__priority);
         });
     }
     
@@ -572,6 +605,19 @@ function __input_system_tick()
             _global.__virtual_array[_i].__tick();
             ++_i;
         }
+    }
+    
+    #endregion
+    
+    
+    
+    #region Players
+    
+    var _p = 0;
+    repeat(INPUT_MAX_PLAYERS)
+    {
+        _global.__players[_p].tick();
+        ++_p;
     }
     
     #endregion
@@ -699,5 +745,12 @@ function __input_system_tick()
         case INPUT_SOURCE_MODE.HOTSWAP:     __input_hotswap_tick();                break;
         case INPUT_SOURCE_MODE.MIXED:                                              break;
         case INPUT_SOURCE_MODE.MULTIDEVICE:                                        break;
+    }
+    
+    
+    
+    if (_global.__allow_gamepad_tester && _global.__gamepad_tester_data.__enabled)
+    {
+        __input_gamepad_tester_tick();
     }
 }

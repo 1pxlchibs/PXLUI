@@ -22,8 +22,8 @@ create = function(pageName, id){
 	
 	id.children = [];
 	
-	id.width = 0;
-	id.height = 0;
+	id.width = 1;
+	id.height = 1;
 	
 	id.trueWidth = 0;
 	id.trueHeight = 0;
@@ -36,6 +36,8 @@ create = function(pageName, id){
 			array_push(id.children,inst);
 
 			with(inst){
+				cursor_instance = other.cursor_instance;
+				player_index = other.player_index;
 				create(id.page, inst);
 				grandparent = other.parent;
 				parent = other.id;
@@ -65,37 +67,43 @@ create = function(pageName, id){
 }
 
 _cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.grandparent.x + id.parent.x, id.y + id.grandparent.y + id.parent.y, id.x + id.grandparent.x + id.parent.x + id.width + id.padding[0]*2, id.y + id.grandparent.y + id.parent.y + id.height + id.padding[1]*2);	
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.parent.x, id.y + id.parent.y, id.x + id.parent.x + id.width + id.padding[0]*2, id.y + id.parent.y + id.height + id.padding[1]*2);	
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x, id.y, id.x + id.width + id.padding[0]*2, id.y + id.height + id.padding[1]*2);	
+	var _x1 = id.x;
+	var _x2 = id.x + id.width + id.padding[0]*2;
+	var _y1 = id.y;
+	var _y2 = id.y + id.height + id.padding[1]*2;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+	}
 }
 
 step = function(id){
 	if (_cursorIn()){
 		switch(layout) {
 			case PXLUI_ORIENTATION.HORIZONTAL:
-				if (PXLUI_SCROLL_UP){				
+				if (input_check("held_previous",player_index)){				
 					offset.x += children[currentElement].width+padding[0];
 					offset.x = clamp(offset.x,-id.trueWidth+id.width,0);
 					refresh(id);
 				}
 	
-				if (PXLUI_SCROLL_DOWN){	
+				if (input_check("held_next",player_index)){	
 					offset.x -= children[currentElement].width+padding[0];
 					offset.x = clamp(offset.x,-id.trueWidth+id.width,0);
 					refresh(id);
 				}
 			break;
 			case PXLUI_ORIENTATION.VERTICAL:
-				if (PXLUI_SCROLL_UP){				
+				if (input_check("held_previous",player_index)){				
 					offset.y += children[currentElement].height+padding[1];
 					offset.y = clamp(offset.y,-id.trueHeight+id.height,0);
 					refresh(id);
 				}
 	
-				if (PXLUI_SCROLL_DOWN){	
+				if (input_check("held_next",player_index)){	
 					offset.y -= children[currentElement].height+padding[1];
 					offset.y = clamp(offset.y,-id.trueHeight+id.height,0);
 					refresh(id);
@@ -144,23 +152,21 @@ refresh = function(id){
 set_dims = function(id){
     switch(layout) {
         case PXLUI_ORIENTATION.HORIZONTAL:
-            for(var i=0; i<id.amount; i++) {
-				if (i < array_length(id.children)){
-					var element = id.children[i];
-					
-					id.height = element.height + id.padding[1];
+            for(var i=0; i< array_length(id.children); i++) {
+				var element = id.children[i];
+				if (i < id.amount){
 					id.width += element.width + id.padding[0];
 				}
+				id.height = max(id.height,element.height + id.padding[1]);
             }
         break;
         case PXLUI_ORIENTATION.VERTICAL:
-			for(var i=0; i<id.amount; i++) {
-				if (i < array_length(id.children)){
-					var element = id.children[i];
-
-					id.width = element.width + id.padding[0];
+			for(var i=0; i<array_length(id.children); i++) {
+				var element = id.children[i];
+				if (i < id.amount){
 					id.height += element.height + id.padding[1];
 				}
+				id.width = max(id.width,element.width + id.padding[0]);
 	        }
         break;
     }

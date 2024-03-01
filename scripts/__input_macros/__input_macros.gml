@@ -1,5 +1,7 @@
-#macro __INPUT_VERSION "6.0.2.1 Beta"
-#macro __INPUT_DATE    "2023-06-02"
+// Feather disable all
+
+#macro __INPUT_VERSION "6.1.5"
+#macro __INPUT_DATE    "2023-11-05"
 #macro __INPUT_DEBUG   false
 
 
@@ -20,6 +22,14 @@
 //How many frames to wait before scanning for connected gamepads
 //This works around Steam sometimes reporting confusing connection/disconnection events on boot
 #macro __INPUT_GAMEPADS_TICK_PREDELAY  10     
+
+//How many frames to wait before considering a gamepad disconnected
+//This works around momentary disconnections such as a jiggled cable or low battery level
+#macro __INPUT_GAMEPADS_DISCONNECTION_TIMEOUT 5
+
+//How many frames to wait after game regains focus before hotswapping on axis
+//This works around resting non-zero axes showing a false-positive delta value when focus changes
+#macro __INPUT_GAMEPADS_FOCUS_TIMEOUT 2
 
 #macro __INPUT_GLOBAL_STATIC_LOCAL     static _global = __input_global();
 #macro __INPUT_GLOBAL_STATIC_VARIABLE  static __global = __input_global();
@@ -74,6 +84,7 @@
 
 
 #macro __INPUT_SDL2_SUPPORT         (!INPUT_ON_WEB && (INPUT_ON_PC || __INPUT_ON_ANDROID))
+#macro __INPUT_DIGITAL_TRIGGER      (__INPUT_ON_SWITCH || (__INPUT_ON_IOS && !INPUT_ON_WEB))
 #macro __INPUT_KEYBOARD_NORMATIVE   (INPUT_ON_PC || INPUT_ON_WEB || __INPUT_ON_SWITCH)
 #macro __INPUT_LED_PATTERN_SUPPORT  ((os_type == os_ps5) || __INPUT_ON_SWITCH || __INPUT_ON_IOS || (__INPUT_ON_WINDOWS && !INPUT_ON_WEB))
 #macro __INPUT_STEAMWORKS_SUPPORT   ((__INPUT_ON_LINUX || __INPUT_ON_WINDOWS) && !INPUT_ON_WEB)
@@ -191,6 +202,7 @@ enum __INPUT_VERB_TYPE
 {
     __BASIC,
     __CHORD,
+    __COMBO,
 }
 
 enum __INPUT_TRIGGER_EFFECT
@@ -199,6 +211,15 @@ enum __INPUT_TRIGGER_EFFECT
     __TYPE_FEEDBACK,
     __TYPE_WEAPON,
     __TYPE_VIBRATION,
+}
+
+enum __INPUT_COMBO_PHASE
+{
+    __PRESS,
+    __RELEASE,
+    __PRESS_OR_RELEASE,
+    __HOLD,
+    __CHARGE,
 }
 
 //INPUT_STATUS.DISCONNECTED *must* be zero so that array_size() initializes gamepad status to disconnected
@@ -296,6 +317,7 @@ enum INPUT_VIRTUAL_RELEASE
                                        }
 
 #macro __INPUT_VERIFY_BASIC_VERB_NAME  if (variable_struct_exists(_global.__chord_verb_dict, _verb_name)) __input_error("\"", _verb_name, "\" is a chord verb. Verbs passed to this function must be basic verb");\
+                                       if (variable_struct_exists(_global.__combo_verb_dict, _verb_name)) __input_error("\"", _verb_name, "\" is a combo verb. Verbs passed to this function must be basic verb");\
                                        if (!variable_struct_exists(_global.__basic_verb_dict, _verb_name)) __input_error("Verb \"", _verb_name, "\" not recognised");
                                        
                                        
@@ -306,14 +328,28 @@ enum INPUT_VIRTUAL_RELEASE
                               {\
                                   if (!is_instanceof(_source, __input_class_source))\
                                   {\
-                                      __input_error("Invalid source provided (", _source, ")");\
+                                      if (_source == INPUT_GAMEPAD)\
+                                      {\
+                                          __input_error("Cannot use INPUT_GAMEPAD for a source\nPlease use a specific gamepad e.g. INPUT_GAMEPAD[1]");\
+                                      }\
+                                      else\
+                                      {\
+                                        __input_error("Invalid source provided (", _source, ")");\
+                                      }\
                                   }\
                               }\
                               else\
                               {\
                                   if (instanceof(_source) != "__input_class_source")\
                                   {\
-                                      __input_error("Invalid source provided (", _source, ")");\
+                                      if (_source == INPUT_GAMEPAD)\
+                                      {\
+                                          __input_error("Cannot use INPUT_GAMEPAD for a source\nPlease use a specific gamepad e.g. INPUT_GAMEPAD[1]");\
+                                      }\
+                                      else\
+                                      {\
+                                        __input_error("Invalid source provided (", _source, ")");\
+                                      }\
                                   }\
                               }
 
@@ -323,14 +359,14 @@ enum INPUT_VIRTUAL_RELEASE
                                              {\
                                                  if (!_global.__any_keyboard_binding_defined && !_global.__any_mouse_binding_defined)\
                                                  {\
-                                                    __input_error("Cannot claim ", _source, ", no keyboard or mouse bindings have been created in a default profile (see __input_config_verbs_and_bindings())");\
+                                                    __input_error("Cannot claim ", _source, ", no keyboard or mouse bindings have been created in a default profile (see __input_config_verbs())");\
                                                  }\
                                              }\
                                              else\
                                              {\
                                                  if (!_global.__any_keyboard_binding_defined)\
                                                  {\
-                                                     __input_error("Cannot claim ", _source, ", no keyboard bindings have been created in a default profile (see __input_config_verbs_and_bindings())");\
+                                                     __input_error("Cannot claim ", _source, ", no keyboard bindings have been created in a default profile (see __input_config_verbs())");\
                                                  }\
                                              }\
                                          }\
@@ -338,20 +374,13 @@ enum INPUT_VIRTUAL_RELEASE
                                          {\
                                              if (!_global.__any_mouse_binding_defined)\
                                              {\
-                                                 __input_error("Cannot claim ", _source, ", no mouse bindings have been created in a default profile (see __input_config_verbs_and_bindings())");\
-                                             }\
-                                         }\
-                                         else if (_source == INPUT_TOUCH)\
-                                         {\
-                                             if (!_global.__any_touch_binding_defined)\
-                                             {\
-                                                 __input_error("Cannot claim ", _source, ", no virtual button bindings have been created in a default profile (see __input_config_verbs_and_bindings())");\
+                                                 __input_error("Cannot claim ", _source, ", no mouse bindings have been created in a default profile (see __input_config_verbs())");\
                                              }\
                                          }\
                                          else if (_source.__source == __INPUT_SOURCE.GAMEPAD)\
                                          {\
                                              if (!_global.__any_gamepad_binding_defined)\
                                              {\
-                                                 __input_error("Cannot claim ", _source, ", no gamepad bindings have been created in a default profile (see __input_config_verbs_and_bindings())");\
+                                                 __input_error("Cannot claim ", _source, ", no gamepad bindings have been created in a default profile (see __input_config_verbs())");\
                                              }\
                                          }

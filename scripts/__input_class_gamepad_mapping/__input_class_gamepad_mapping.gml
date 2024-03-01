@@ -1,3 +1,4 @@
+// Feather disable all
 /// @param GMconstant
 /// @param rawIndex
 /// @param rawMappingType
@@ -19,7 +20,7 @@ function __input_class_gamepad_mapping(_gm, _raw, _type, _sdl_name) constructor
     limited_range  = false;
     extended_range = false;
     hat_mask       = undefined;
-    scale          = 256;
+    scale          = 1;
     
     //Hat-on-axis and split axis
     raw_negative = undefined;
@@ -57,7 +58,7 @@ function __input_class_gamepad_mapping(_gm, _raw, _type, _sdl_name) constructor
         
         if (!_scan) return;
         
-        if (INPUT_ALLOW_OUT_OF_FOCUS || __global.__window_focus)
+        if (__global.__game_input_allowed || (__global.__allow_gamepad_tester && __global.__gamepad_tester_data.__enabled && is_debug_overlay_open()))
         {        
             switch(type)
             {
@@ -104,7 +105,7 @@ function __input_class_gamepad_mapping(_gm, _raw, _type, _sdl_name) constructor
             if (clamp_positive) value = clamp(value,  0, 1);
             if (invert)         value = 1 - value;
                   
-            value = clamp((256/scale)*value, -1, 1);
+            value = clamp(scale*value, -1, 1);
             
             if (__value_previous == undefined)
             {

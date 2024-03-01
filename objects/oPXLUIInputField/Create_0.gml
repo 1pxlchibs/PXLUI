@@ -8,7 +8,9 @@ create = function(pageName, id){
 	id.grandparent = -1;
 	id.parent = -1;
 	
-	id.sprite = global.pxlui_theme[$ global.pxlui_settings.theme].container;
+	//keyboard_string = "";
+	
+	id.sprite = global.pxlui_theme[$ global.pxlui_settings.theme].slider;
 	id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
 	id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.text.primary;
 	id.color3 = global.pxlui_theme[$ global.pxlui_settings.theme].color.text.secondary;
@@ -103,16 +105,21 @@ beginStep = function(id){
 		id.blinker = "";
 	}
 		
-	
 	id.scribbleText = scribble("["+id.font+"]"+id.text+id.blinker);
 }
 
 cursorIn = function(){
-	if (grandparent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
-	if (parent != -1) 
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-	return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.x1collision, id.y + id.y1collision, id.x + id.x2collision, id.y + id.y2collision);	
+	var _x1 = id.x + id.x1collision;
+	var _x2 = id.x + id.x2collision;
+	var _y1 = id.y + id.y1collision;
+	var _y2 = id.y + id.y2collision;
+	if (id.interactable){
+		if (grandparent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1) 
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+	}	
 }
 
 step = function(id){
@@ -121,13 +128,13 @@ step = function(id){
 	
 	id.xMod = lerp(id.xMod, 0, PXLUI_EASE_SPEED);
 	id.yMod = lerp(id.yMod, 0, PXLUI_EASE_SPEED);
-	
+
 	if (id.type){
 		if(keyboard_string != ""){
 			id.text += keyboard_string;
-		    keyboard_string = "";
+			keyboard_string = "";
 		}
-		if (PXLUI_BACKSPACE){
+		if (input_check_repeat("backspace",player_index,4,3)){
 			id.text = string_delete(id.text,string_length(id.text),1);
 		}
 	}
@@ -137,9 +144,10 @@ onhover = function(id){
 	if (id.hover){
 		id.xscaleMod = lerp(id.xscaleMod, -0.1, PXLUI_EASE_SPEED);
 		id.yscaleMod = lerp(id.yscaleMod, -0.1, PXLUI_EASE_SPEED);
-	
+	}
+	if (id.type){
 		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;
-		id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;
+		id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;	
 	}
 }
 
@@ -157,7 +165,7 @@ onhold = function(id){
 	id.xscaleMod = lerp(id.xscaleMod, -0.2, PXLUI_EASE_SPEED);
 	id.yscaleMod = lerp(id.yscaleMod, -0.2, PXLUI_EASE_SPEED);
 	
-	id.yMod = 2;
+	//id.yMod = 2;
 }
 
 onrelease = function(id){
@@ -177,10 +185,10 @@ drawGUI = function(id){
 		id.scribblePlaceholderText.blend(id.color3, 1).align(fa_left, fa_middle).transform(1 + id.xscaleMod,1 + id.yscaleMod).draw(id.x + id.htextAlign + id.xMod, id.y + id.vtextAlign + id.yMod);
 	}
 
-	if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
+	if (input_check_pressed("item_active",player_index)) id.onclick(id);
 	
-	if (id.hover){	
-		if (PXLUI_CLICK_CHECK) id.onhold(id);
-		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
+	if (id.hover && id.interactable){	
+		if (input_check("item_active",player_index)) id.onhold(id);
+		if (input_check_released("item_active",player_index)) id.onrelease(id);
 	}
 }

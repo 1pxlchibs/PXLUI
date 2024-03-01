@@ -120,7 +120,7 @@ function __scribble_gen_3_devanagari()
     
     #region Reposition ि  to the front of the word and replace it with an "f"
     
-    //TODO - Log where ि  is found during the nukta ligature sweep
+    //TODO - pxlui_log where ि  is found during the nukta ligature sweep
     var _i = 1; //Start at the second char because we don't care if the string starts with 0x093F (Vowel Sign I)
     repeat(_glyph_count-1)
     {
@@ -171,7 +171,7 @@ function __scribble_gen_3_devanagari()
     //Using a for-loop here as _glyph_count may change
     for(var _i = 0; _i < _glyph_count; ++_i)
     {
-        //TODO - Log where ra-virama is found during the nukta ligature sweep
+        //TODO - pxlui_log where ra-virama is found during the nukta ligature sweep
         if ((_glyph_grid[# _i, __SCRIBBLE_GEN_GLYPH.__UNICODE] == ord("र")) && (_glyph_grid[# _i+1, __SCRIBBLE_GEN_GLYPH.__UNICODE] == 0x094D)) //Ra followed by virama
         {
             var _newPosition = _i + 2;

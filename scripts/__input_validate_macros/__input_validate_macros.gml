@@ -1,3 +1,4 @@
+// Feather disable all
 function __input_validate_macros()
 {
     #region General
@@ -185,9 +186,10 @@ function __input_validate_macros()
     
     if ((INPUT_FALLBACK_PROFILE_BEHAVIOR != 0)
     &&  (INPUT_FALLBACK_PROFILE_BEHAVIOR != 1)
-    &&  (INPUT_FALLBACK_PROFILE_BEHAVIOR != 2))
+    &&  (INPUT_FALLBACK_PROFILE_BEHAVIOR != 2)
+    &&  (INPUT_FALLBACK_PROFILE_BEHAVIOR != 3))
     {
-        __input_error("INPUT_FALLBACK_PROFILE_BEHAVIOR must be 0, 1, or 2");
+        __input_error("INPUT_FALLBACK_PROFILE_BEHAVIOR must be 0, 1, 2, or 3");
     }
     
     if (!is_string(INPUT_AUTO_PROFILE_FOR_KEYBOARD) && !is_undefined(INPUT_AUTO_PROFILE_FOR_KEYBOARD))
@@ -398,7 +400,7 @@ function __input_validate_macros()
     &&  (INPUT_VIRTUAL_KEYBOARD_AUTOCAPITALIZATION_TYPE != kbv_autocapitalize_sentences)
     &&  (INPUT_VIRTUAL_KEYBOARD_AUTOCAPITALIZATION_TYPE != kbv_autocapitalize_characters))
     {
-    	__input_error("INPUT_VIRTUAL_KEYBOARD_AUTOCAPITALIZATION_TYPE must be a virtual keyboard autocapitalization type constant");
+        __input_error("INPUT_VIRTUAL_KEYBOARD_AUTOCAPITALIZATION_TYPE must be a virtual keyboard autocapitalization type constant");
     }
     
     #endregion

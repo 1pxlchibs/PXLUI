@@ -1,3 +1,4 @@
+// Feather disable all
 function __input_class_player() constructor
 {
     __INPUT_GLOBAL_STATIC_VARIABLE  //Set static __global
@@ -7,6 +8,7 @@ function __input_class_player() constructor
     __source_array          = [];
     __verb_state_dict       = {};
     __chord_state_dict      = {};
+    __combo_state_dict      = {};
     __last_input_time       = -infinity;
     __verb_group_state_dict = {};
     
@@ -485,12 +487,12 @@ function __input_class_player() constructor
         return -1;
     }
     
-    static __sources_any_input = function()
+    static __sources_any_rebind_allowed_input = function()
     {
         var _i = 0;
         repeat(array_length(__source_array))
         {
-            if (__source_array[_i].__scan_for_binding(__index, true, 0, undefined)) return true;
+            if (__source_array[_i].__scan_for_binding(__index, true, __rebind_ignore_struct, __rebind_allow_struct)) return true;
             ++_i;
         }
         
@@ -531,32 +533,79 @@ function __input_class_player() constructor
         {
             if (!_allowFallback) return _empty_binding;
             
-            if (INPUT_FALLBACK_PROFILE_BEHAVIOR == 1)
+            var _keyboard_profile_allowed = __global.__keyboard_allowed && __global.__any_keyboard_binding_defined;
+            var _gamepad_profile_allowed  = __global.__gamepad_allowed  && __global.__any_gamepad_binding_defined;
+            
+            switch(INPUT_FALLBACK_PROFILE_BEHAVIOR)
             {
-                if (INPUT_ON_PC && __global.__keyboard_allowed && __global.__any_keyboard_binding_defined)
-                {
-                    //Try to use a keyboard profile if possible
-                    _profile_name = INPUT_AUTO_PROFILE_FOR_KEYBOARD;
-                }
-                else if (__global.__any_gamepad_binding_defined)
-                {
-                    //Try to use a gamepad profile if possible
-                    _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
-                }
-                else
-                {
-                    //Return a "static" empty binding since everything else failed
+                case 0:
                     return _empty_binding;
-                }
-            }
-            else if ((INPUT_FALLBACK_PROFILE_BEHAVIOR == 2) && __global.__any_gamepad_binding_defined)
-            {
-                //Try to use a gamepad profile if possible
-                _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
-            }
-            else
-            {
-                return _empty_binding;
+                break;
+                
+                case 1:
+                    if (INPUT_ON_PC && _keyboard_profile_allowed)
+                    {
+                        //Try to use a keyboard profile if possible
+                        _profile_name = INPUT_AUTO_PROFILE_FOR_KEYBOARD;
+                    }
+                    else if (_gamepad_profile_allowed)
+                    {
+                        //Fall back to a gamepad profile
+                        _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
+                    }
+                    else
+                    {
+                        //Return a "static" empty binding since everything else failed
+                        return _empty_binding;
+                    }
+                break;
+                
+                case 2:
+                    if (_gamepad_profile_allowed)
+                    {
+                        //Try to use a gamepad profile if possible
+                        _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
+                    }
+                    else
+                    {
+                        return _empty_binding;
+                    }
+                break;
+                
+                case 3:
+                    if (INPUT_ON_PC)
+                    {
+                        if (input_gamepad_is_any_connected() && _gamepad_profile_allowed)
+                        {
+                            //Try to use a gamepad profile if a gamepad has been connected
+                            _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
+                        }
+                        else if (_keyboard_profile_allowed)
+                        {
+                            //Fall back to a keyboard profile
+                            _profile_name = INPUT_AUTO_PROFILE_FOR_KEYBOARD;
+                        }
+                        else
+                        {
+                            //Return a "static" empty binding since everything else failed
+                            return _empty_binding;
+                        }
+                    }
+                    else if (_gamepad_profile_allowed)
+                    {
+                        //Try to use a gamepad profile if possible
+                        _profile_name = INPUT_AUTO_PROFILE_FOR_GAMEPAD;
+                    }
+                    else
+                    {
+                        //Return a "static" empty binding since everything else failed
+                        return _empty_binding;
+                    }
+                break;
+                
+                default:
+                    __input_error("Unhandled INPUT_FALLBACK_PROFILE_BEHAVIOR value (", INPUT_FALLBACK_PROFILE_BEHAVIOR, ")");
+                break;
             }
         }
         
@@ -830,26 +879,57 @@ function __input_class_player() constructor
     }
     
     /// @param verbName
-    static __add_chord = function(_verb_name)
+    /// @param type
+    static __add_complex_verb = function(_verb_name, _type)
     {
         //Set up a verb container on the player separate from the bindings
         if (is_struct(__verb_state_dict[$ _verb_name]))
         {
-            __input_error("Chord \"", _verb_name, "\" has already been added to player ", __index);
+            __input_error("Verb \"", _verb_name, "\" has already been added to player ", __index);
         }
         else
         {
-            if (__INPUT_DEBUG_VERBS) __input_trace("Verb \"", _verb_name, "\" not found on player ", __index, ", creating a new one as a chord");
+            if (__INPUT_DEBUG_VERBS) __input_trace("Verb \"", _verb_name, "\" not found on player ", __index, ", creating a new one as a complex verb (type=", _type, ")");
             
             var _verb_state_struct = new __input_class_verb_state();
             _verb_state_struct.__player = self;
             _verb_state_struct.name     = _verb_name;
-            _verb_state_struct.type     = __INPUT_VERB_TYPE.__CHORD;
-            _verb_state_struct.analogue = false; //Chord verbs are never analogue
+            _verb_state_struct.type     = _type;
+            _verb_state_struct.analogue = false; //Complex verbs are never analogue
             __verb_state_dict[$ _verb_name] = _verb_state_struct;
         }
     }
     
+    /// @param verbName
+    /// @param comboDefinition
+    static __add_combo_state = function(_verb_name, _combo_defintion)
+    {
+        //Set up a verb container on the player separate from the bindings
+        if (is_struct(__combo_state_dict[$ _verb_name]))
+        {
+            __input_error("Combo state with name \"", _verb_name, "\" has already been added to player ", __index);
+        }
+        else
+        {
+            __combo_state_dict[$ _verb_name] = new __input_class_combo_state(_verb_name, _combo_defintion);
+        }
+    }
+
+    /// @param verbName
+    /// @param chordDefinition
+    static __add_chord_state = function(_verb_name, _chord_defintion)
+    {
+        //Set up a verb container on the player separate from the bindings
+        if (is_struct(__chord_state_dict[$ _verb_name]))
+        {
+            __input_error("Chord state with name \"", _verb_name, "\" has already been added to player ", __index);
+        }
+        else
+        {
+            __chord_state_dict[$ _verb_name] = new __input_class_chord_state(_verb_name, _chord_defintion);
+        }
+    }	
+
     #endregion
     
     
@@ -1455,14 +1535,15 @@ function __input_class_player() constructor
                 ++_v;
             }
             
-            __input_player_tick_sources();
+            __input_player_tick_sources(self);
             
             //Update our basic verbs first
             tick_basic_verbs();
             
-            //Update our chords
+            //Update our chords and combos
             //We directly access verb values to detect state here
             tick_chord_verbs();
+            tick_combo_verbs();
             
             __cursor.__tick();
             
@@ -1494,12 +1575,36 @@ function __input_class_player() constructor
                 {
                     value = 1;
                     raw   = 1;
-                    tick();
+                    tick(other.__verb_group_state_dict, other.__active);
                 }
             }
             else
             {
-                __verb_state_dict[$ _chord_name].tick();
+                __verb_state_dict[$ _chord_name].tick(__verb_group_state_dict, __active);
+            }
+            
+            ++_i;
+        }
+    }
+    
+    static tick_combo_verbs = function()
+    {
+        var _i = 0;
+        repeat(array_length(__global.__combo_verb_array))
+        {
+            var _combo_name = __global.__combo_verb_array[_i];
+            if (__combo_state_dict[$ _combo_name].__evaluate(__verb_state_dict))
+            {
+                with(__verb_state_dict[$ _combo_name])
+                {
+                    value = 1;
+                    raw   = 1;
+                    tick(other.__verb_group_state_dict, other.__active);
+                }
+            }
+            else
+            {
+                __verb_state_dict[$ _combo_name].tick(__verb_group_state_dict, __active);
             }
             
             ++_i;
@@ -1632,7 +1737,7 @@ function __input_class_player() constructor
         
         if (__rebind_state == 1) //Waiting for the player to release all buttons
         {
-            if (!__sources_any_input())
+            if (!__sources_any_rebind_allowed_input())
             {
                 __input_trace("Now scanning for a new binding from player ", __index);
                 __rebind_state = 2;

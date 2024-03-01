@@ -1,3 +1,4 @@
+// Feather disable all
 function __input_class_cursor() constructor
 {
     __INPUT_GLOBAL_STATIC_VARIABLE  //Set static __global
@@ -106,7 +107,10 @@ function __input_class_cursor() constructor
         }
         
         //Don't update the cursor if the mouse recently moved or we're rebinding controls
-        if (__global.__cursor_verbs_valid && (!__global.__pointer_moved || !_can_use_mouse) && (__player.__rebind_state <= 0))
+        if (__global.__game_input_allowed
+        &&  __global.__cursor_verbs_valid
+        && (!__global.__pointer_moved || !_can_use_mouse) 
+        && (__player.__rebind_state <= 0))
         {
             //Gyro
             if (__player.__gyro_enabled)

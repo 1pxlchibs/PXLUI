@@ -2,8 +2,8 @@
   "resourceType": "GMScript",
   "resourceVersion": "1.0",
   "name": "__input_define_gamepad_types",
-  "isDnD": false,
   "isCompatibility": false,
+  "isDnD": false,
   "parent": {
     "name": "Initialization",
     "path": "folders/Extensions/Input/(System)/Initialization.yy",

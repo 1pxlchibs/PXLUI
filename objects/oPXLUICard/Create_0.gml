@@ -90,13 +90,48 @@ create = function(pageName, id){
 				t_y = id.height * (element.yy / 100);	
 			}
 			
-			show_debug_message("element_created: "+string(t_x)+"/"+string(t_y));
+			
+			//If element has these variables, override the default ones.
+			var _drawGUI = -1, _step = -1, _onhover = -1, _onhold = -1;
+			if (variable_struct_exists(element,"drawGUI")){
+				_drawGUI = element.drawGUI;	
+			}
+			if (variable_struct_exists(element,"step")){
+				_step = element.step;	
+			}
+			if (variable_struct_exists(element,"onhover")){
+				_onhover = element.onhover;	
+			}
+			if (variable_struct_exists(element,"onhold")){
+				_onhold = element.onhold;	
+			}
+			
 			var inst = instance_create_depth(t_x, t_y, id.depth_original - i-1, element.object, element);
 			array_push(id.children,inst);
+
 			with(inst){
+				cursor_instance = other.cursor_instance;
+				player_index = other.player_index;
+				create(id.page, inst);
+				grandparent = other.parent;
 				parent = other.id;
-				create(id.page, inst);	
 				visible = false;
+				
+				if (_drawGUI != -1){
+					drawGUI = _drawGUI;	
+				}
+				if (_step != -1){
+					step = _step;	
+				}
+				if (_onhover != -1){
+					onhover = _onhover;	
+				}
+				if (_onhold != -1){
+					onhold = _onhold;	
+				}
+				if (variable_struct_exists(element,"interactable")){
+					interactable = element.interactable;	
+				}
 			}
 		}
 	}
@@ -134,12 +169,14 @@ refresh = function(id){
 }
 
 beginStep = function(id){
-	id.hover = false;
-	id.pressed = false;
-	if (id.interactable){
-		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
-	} else{
-		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.secondary;
+	if (!cursorIn()){
+		id.hover = false;
+		id.pressed = false;
+		if (id.interactable){
+			id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
+		} else{
+			id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.secondary;
+		}
 	}
 }
 
@@ -154,10 +191,10 @@ step = function(id){
 cursorIn = function(){
 	if (id.interactable){
 		if (grandparent != -1) 
-			return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
 		if (parent != -1) 
-			return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, x + x1collision, y + y1collision, x + x2collision, y + y2collision);
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
 	}
 }
 
@@ -189,8 +226,15 @@ drawGUI = function(){
 	if (id.hover){
 		id.onhover(id);
 		
-		if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
-		if (PXLUI_CLICK_CHECK) id.onhold(id);
-		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
+		if (input_check_pressed("item_active",player_index)) id.onclick(id);
+		if (input_check("item_active",player_index)) id.onhold(id);
+		if (input_check_released("item_active",player_index)) id.onrelease(id);
 	}
+	draw_sprite_ext(id.sprite, 1, id.x + id.xalign + id.xMod, id.y + id.yalign + id.yMod,
+					id.width/sprite_get_width(id.sprite), id.height/sprite_get_height(id.sprite),
+					0,id.color,1);
+	draw_surface_ext(id.surf, id.x + id.xalign + id.xMod, id.y + id.yalign + id.yMod, 1 + id.xscaleMod, 1 + id.yscaleMod, 0, c_white, id.alpha);
+
+					
+	
 }

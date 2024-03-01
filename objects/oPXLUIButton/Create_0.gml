@@ -2,12 +2,12 @@ event_inherited();
 
 create = function(pageName, id){
 	//keep original depth
-	id.depth_original = depth;
 	id.page = pageName;
-	
-	id.hover = false;
 	id.interactable = true;
 	
+	id.hover = false;
+	
+	id.ancestry = [];
 	id.grandparent = -1;
 	id.parent = -1;
 	
@@ -23,10 +23,19 @@ create = function(pageName, id){
 	id.scribbleText = scribble("["+id.font+"]"+id.text);
 	
 	//Values for position and scale animating
-	id.xMod = 0;
-	id.yMod = 0;
-	id.xscaleMod = 0;
-	id.yscaleMod = 0;
+	id.xOffset = 0;
+	id.xOffsetTarget = 0;
+	id.xOffsetAmount = 0;
+	id.yOffset = 0;
+	id.yOffsetTarget = 0;
+	id.yOffsetAmount = 0;
+
+	id.xscale = 0;
+	id.xscaleTarget = 0;
+	id.xscaleAmount = 0;
+	id.yscale = 0;
+	id.yscaleTarget = 0;
+	id.yscaleAmount = 0;
 	
 	//if width wasn't set, scale it to the text
 	if (id.width == -1){
@@ -98,15 +107,17 @@ create = function(pageName, id){
 }
 
 beginStep = function(id){
-	id.hover = false;
-	id.pressed = false;
+	if (!cursorIn()){
+		id.hover = false;
+		id.pressed = false;
 	
-	if (id.interactable){
-		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
-	} else{
-		id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.secondary;
+		if (id.interactable){
+			id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.base;
+		} else{
+			id.color = global.pxlui_theme[$ global.pxlui_settings.theme].color.secondary;
+		}
+		id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;
 	}
-	id.color2 = global.pxlui_theme[$ global.pxlui_settings.theme].color.selection;
 	
 	id.font = global.pxlui_theme[$ global.pxlui_settings.theme].fonts.text1;
 	
@@ -138,24 +149,30 @@ beginStep = function(id){
 cursorIn = function(){
 	if (id.interactable){
 		if (grandparent != -1) 
-			return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui,id.grandparent.x + id.parent.x + id.x + id.x1collision, id.grandparent.y + id.parent.y + id.y + id.y1collision, id.grandparent.x + id.parent.x + id.x + id.x2collision, id.grandparent.y + id.parent.y + id.y + id.y2collision);
-		if (parent != -1) 
-			return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.parent.x + id.x + id.x1collision, id.parent.y + id.y + id.y1collision, id.parent.x + id.x + id.x2collision, id.parent.y + id.y + id.y2collision);
-		return point_in_rectangle(oPXLUICursor.xGui, oPXLUICursor.yGui, id.x + id.x1collision, id.y + id.y1collision, id.x + id.x2collision, id.y + id.y2collision);	
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+		if (parent != -1){
+			if (parent.object_index = oPXLUIScrollView){
+				if (parent._cursorIn()){
+					return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+				}
+				return false;
+			}
+			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		}
+		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
 	}
 }
 
 step = function(id){
-	id.xscaleMod = lerp(id.xscaleMod, 0, PXLUI_EASE_SPEED);
-	id.yscaleMod = lerp(id.yscaleMod, 0, PXLUI_EASE_SPEED);
+	id.xscale = lerp(id.xscale, id.xscaleTarget, PXLUI_EASE_SPEED);
+	id.yscale = lerp(id.yscale, id.xscaleTarget, PXLUI_EASE_SPEED);
 	
-	id.xMod = lerp(id.xMod, 0, PXLUI_EASE_SPEED);
-	id.yMod = lerp(id.yMod, 0, PXLUI_EASE_SPEED);
-	
-	if (id.hover){
-		if (PXLUI_CLICK_CHECK_PRESSED) id.onclick(id);
-		if (PXLUI_CLICK_CHECK) id.onhold(id);
-		if (PXLUI_CLICK_CHECK_RELEASED) id.onrelease(id);
+	id.xOffset = lerp(id.xoffset, id.xOffsetTarget, PXLUI_EASE_SPEED);
+	id.yOffset = lerp(id.yoffset, id.yOffsetTarget, PXLUI_EASE_SPEED);
+	if (id.hover && id.interactable){
+		if (input_check_pressed("item_active",player_index)) id.onclick(id);
+		if (input_check("item_active",player_index)) id.onhold(id);
+		if (input_check_released("item_active",player_index)) id.onrelease(id);
 	}
 }
 
@@ -165,10 +182,8 @@ onhover = function(id){
 			id.parent.currentElement = scrollview_number;
 		}
 		
-		id.yMod = lerp(id.yMod, 8, PXLUI_EASE_SPEED);
-		
-		draw_sprite_ext(id.sprite, 1, id.x + id.xalign + id.xMod,  id.y + id.yalign + id.yMod, 
-					id.width/sprite_get_width(id.sprite) + id.xscaleMod, id.height/sprite_get_height(id.sprite) + id.yscaleMod,
+		draw_sprite_ext(id.sprite, 1, id.x + id.xalign + id.xoffset,  id.y + id.yalign + id.yoffset, 
+					id.width/sprite_get_width(id.sprite) + id.xscale, id.height/sprite_get_height(id.sprite) + id.yscale,
 					0,id.color2,id.alpha);
 	}
 }
@@ -178,7 +193,7 @@ onclick = function(id){
 }
 
 onhold = function(id){
-	id.yMod = 6;
+	id.yoffset = 6;
 }
 
 onrelease = function(id){
@@ -187,10 +202,9 @@ onrelease = function(id){
 
 drawGUI = function(id){
 	id.onhover(id);
-	draw_sprite_ext(id.sprite, 0, id.x + id.xalign + id.xMod,  id.y + id.yalign + id.yMod, 
-					id.width/sprite_get_width(id.sprite) + id.xscaleMod, id.height/sprite_get_height(id.sprite) + id.yscaleMod,
+	draw_sprite_ext(id.sprite, 0, id.x + id.xalign + id.xoffset,  id.y + id.yalign + id.yoffset, 
+					id.width/sprite_get_width(id.sprite) + id.xscale, id.height/sprite_get_height(id.sprite) + id.yscale,
 					0,id.color,id.alpha);
-	
-					
-	id.scribbleText.blend(id.color, id.alpha).align(fa_middle, fa_middle).transform(1 + id.xscaleMod,1 + id.yscaleMod).draw(id.x + id.htextAlign + id.xMod, id.y + id.vtextAlign + id.yMod);
+			
+	id.scribbleText.scale_to_box(id.width,id.height).blend(id.color, id.alpha).align(fa_middle, fa_middle).transform(1 + id.xscale,1 + id.yscale).draw(id.x + id.htextAlign + id.xoffset, id.y + id.vtextAlign + id.yoffset);
 }
