@@ -83,10 +83,10 @@ cursorIn = function(){
 	var _y2 = id.y + id.y2collision;
 	if (id.interactable){
 		if (grandparent != -1) 
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
 		if (parent != -1) 
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
-		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, _x1, _y1, _x2, _y2);	
 	}	
 }
 
@@ -131,7 +131,7 @@ onhold = function(id){
 
 step = function(id){
 	if (id.held){
-		var _val = remap(clamp(cursor_instance.xGui, id.x + id.xalign, id.x + id.xalign + id.width), id.x + id.xalign, id.x + id.xalign + id.width, id.minimum, id.maximum);
+		var _val = remap(clamp(cursor_inst.xGui, id.x + id.xalign, id.x + id.xalign + id.width), id.x + id.xalign, id.x + id.xalign + id.width, id.minimum, id.maximum);
 		set(_val);
 	} else{
 		if (value != id.get()){

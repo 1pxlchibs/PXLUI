@@ -149,17 +149,17 @@ beginStep = function(id){
 cursorIn = function(){
 	if (id.interactable){
 		if (grandparent != -1) 
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
 		if (parent != -1){
 			if (parent.object_index = oPXLUIScrollView){
 				if (parent._cursorIn()){
-					return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+					return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
 				}
 				return false;
 			}
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
 		}
-		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+		return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, _x1, _y1, _x2, _y2);	
 	}
 }
 

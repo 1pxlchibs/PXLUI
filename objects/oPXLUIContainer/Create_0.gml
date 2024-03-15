@@ -111,7 +111,7 @@ create = function(pageName, id){
 			array_push(id.children,inst);
 
 			with(inst){
-				cursor_instance = other.cursor_instance;
+				cursor_inst = other.cursor_inst;
 				player_index = other.player_index;
 				create(id.page, inst);
 				grandparent = other.parent;
@@ -153,15 +153,15 @@ cursorIn = function(){
 	var _y2 = id.y + id.y2collision;
 	if (id.interactable){
 		if (grandparent != -1) 
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.grandparent.x + id.parent.x + _x1, id.grandparent.y + id.parent.y + _y1, id.grandparent.x + id.parent.x + _x2, id.grandparent.y + id.parent.y + _y2);
 		if (parent != -1) 
-			return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
-		return point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, _x1, _y1, _x2, _y2);	
+			return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, id.parent.x + _x1, id.parent.y + _y1, id.parent.x + _x2, id.parent.y + _y2);
+		return point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, _x1, _y1, _x2, _y2);	
 	}
 }
 
 _cursorIn = function(){
-	if (point_in_rectangle(cursor_instance.xGui, cursor_instance.yGui, x + x1collision, y + y1collision, x + x2collision, y + y1collision + 16) || drag){
+	if (point_in_rectangle(cursor_inst.xGui, cursor_inst.yGui, x + x1collision, y + y1collision, x + x2collision, y + y1collision + 16) || drag){
 		return true;	
 	}
 	return false;
@@ -178,14 +178,14 @@ onhover = function(id){
 onclick = function(id){	
 	id.drag = true;
 	
-	id.xdif = cursor_instance.xGui - id.x;
-	id.ydif = cursor_instance.yGui - id.y;
+	id.xdif = cursor_inst.xGui - id.x;
+	id.ydif = cursor_inst.yGui - id.y;
 }
 
 onhold = function(id){
 	if (id.drag){
-		id.x = cursor_instance.xGui - id.xdif;
-		id.y = cursor_instance.yGui - id.ydif;
+		id.x = cursor_inst.xGui - id.xdif;
+		id.y = cursor_inst.yGui - id.ydif;
 	
 		//for(var i = 0; i < array_length(id.children); i++){
 		//	var element = id.children[i];
