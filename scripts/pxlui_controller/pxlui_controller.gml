@@ -16,26 +16,18 @@ function pxlui_create(_player_index = 0) constructor{
 	currentInteractable = -1; //stores id of current ui element selected
 	player_index = _player_index;
 	
-	cursor_inst = -1;
+	cursor_instance = -1;
 	update_cursor = false; //cursor update bool
 	if (instance_exists(oPXLUICursor)){
 		with(oPXLUICursor){
 			if (player_index == _player_index){
-				other.cursor_inst = id;	
+				other.cursor_instance = id;	
 			}
 		}
 	}
-	if (cursor_inst == -1){
-		cursor_inst = instance_create_depth(0,0,-9999,oPXLUICursor,{player_index: _player_index});
+	if (cursor_instance == -1){
+		cursor_instance = instance_create_depth(0,0,-9999,oPXLUICursor,{player_index: _player_index});
 	}
-	
-	//Staggered page loading
-	loading_page = -1;
-	loading_page_delay = -1;
-	loading_page_delay_length = -1;
-	loading_page_increment = 0;
-	loading_pageName = "";
-	loading_pageLayer = -1;
 	
 	///@Description find an element using it's element ID, returns the instance id.
 	///@param elementid Element ID.
@@ -93,12 +85,12 @@ function pxlui_create(_player_index = 0) constructor{
 		if (is_string(_x)){
 			t_x =  (_group_t_x + _group.width * (real(_x) / 100)) + _group_xoffset;	
 		} else{
-			t_x = (_group_t_x + _x) - _group_xoffset;	
+			t_x = (_group_t_x + _x) + _group_xoffset;	
 		}
 		if (is_string(_y)){
 			t_y = (_group_t_y + _group.height * (real(_y) / 100)) + _group_yoffset;	
 		} else{
-			t_y = (_group_t_y + _y) - _group_yoffset;	
+			t_y = (_group_t_y + _y) + _group_yoffset;	
 		}
 		
 		//create the instance
@@ -106,14 +98,16 @@ function pxlui_create(_player_index = 0) constructor{
 		inst.element.__.inst_id = inst;
 		inst.element.__.page = pageName;
 		inst.element.__.group = _group.name;
-		inst.element.__.cursor_inst = cursor_inst;
+		inst.element.__.cursor_instance = cursor_instance;
 		inst.element.__.player_index = player_index;
 		inst.element.__.layer_id = _layer;
 		
-		inst.element.initialize();
-		
 		//give the instance a reference to this system
 		inst.element.__.pxlui = self;
+		
+		inst.element.initialize();
+		
+		
 	}
 	
 	///@description Add a page to PXLUI populated with the elements supplied
@@ -134,7 +128,7 @@ function pxlui_create(_player_index = 0) constructor{
 		variable_struct_remove(uiBook.pages,pageName);
 	}
 		
-	function add_group(groupName, _x, _y, _groupArray, _config = {}){
+	function add_group(groupName, _groupArray, _config = {}){
 		//add a group to the book
 		var _w = _config[$ "width"] ?? PXLUI_UI_W;
 		var _h = _config[$ "height"] ?? PXLUI_UI_H;
@@ -142,15 +136,18 @@ function pxlui_create(_player_index = 0) constructor{
 		var _valign = _config[$ "valign"] ?? fa_top;
 		var _struct = {
 			name: groupName,
-			x: _x,
-			y: _y,
+			x: 0,
+			y: 0,
 			width: _w,
 			height: _h,
 			halign: _halign,
 			valign: _valign,
 			array: array_reverse(_groupArray),
 		}	
+		
 		uiBook.groups[$ groupName] = _struct; //reverse array for correct rendering order
+		
+		return uiBook.groups[$ groupName];
 	}
 	
 	///@description This creates a renderer for PXLUI assigned to the layer specified.
@@ -179,8 +176,8 @@ function pxlui_create(_player_index = 0) constructor{
 			}
 		}
 		
-		if (!instance_exists(cursor_inst)){
-			instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,cursor_inst);
+		if (!instance_exists(cursor_instance)){
+			instance_create_depth(0,0,PXLUI_DEPTH_MIDDLE,cursor_instance);
 		}
 	}
 	
@@ -191,7 +188,7 @@ function pxlui_create(_player_index = 0) constructor{
 	
 	///@description This destroys all UI elements and renderers safely.
 	function destroy(){
-		instance_destroy(pPXLUIElement);
+		instance_destroy(oPXLUIHandler);
 		unrender();
 	}
 	
@@ -221,15 +218,18 @@ function pxlui_create(_player_index = 0) constructor{
 		var _layer = uiBook.layers[$ pageName];
 		var __layer;
 		
+		//check if page exists
 		if (!is_undefined(_page)) {
+			//check if layer for page exists
 			if (!layer_exists(_layer[1])){
 				__layer = layer_create(_layer[0],_layer[1]);
 			} else{
 				__layer = layer_get_id(_layer[1]);
 			}
 			
+			//load elements with a for loop
 			for(var i = 0; i < array_length(_page); i++) {
-				var _group = uiBook.groups[$ _page[i]];
+				var _group = _page[i];
 				var _elements = _group.array;
 				for(var j = 0; j < array_length(_elements); j++) {
 					var _element = _elements[j];
@@ -241,27 +241,6 @@ function pxlui_create(_player_index = 0) constructor{
 		}
 		
 		pxlui_log($"PXLUI: Loaded page {pageName}");
-	}
-	
-	///@description Load specified page using a staggered effect
-	///@param pageName Page name
-	///@param time in steps between each element creation
-	function load_page_delay(pageName, _delay){
-		var _page = uiBook.pages[$ pageName];
-		var _layer = uiBook.layers[$ pageName];
-
-		loading_page = _page;
-		loading_page_delay = _delay;
-		loading_page_delay_length = _delay;
-		loading_pageName = pageName;
-		
-		if (!layer_exists(_layer[1])){
-			loading_pageLayer = layer_create(_layer[0],_layer[1]);
-		} else{
-			loading_pageLayer = layer_get_id(_layer[1]);
-		}
-		
-		render(loading_pageLayer);
 	}
 	
 	///@description unload specified page
@@ -285,25 +264,24 @@ function pxlui_create(_player_index = 0) constructor{
 	
 	///@description Step function for PXLUI, put this in the step event for the ui to work properly!
 	step = function(){
-		with(cursor_inst){
+		with(cursor_instance){
 			with(oPXLUIHandler){
 				if (variable_instance_exists(element,"is_cursor_in")){
 					if (element.is_cursor_in()){
 						element.__.hover = true;
-			
-						if (input_check_pressed("shoot",element.__.player_index)){
+
+						if (input_check_pressed(PXLUI_UI_BUTTON,element.__.player_index)){
 							element.__.pressed = true;
 						}
-						if (input_check("shoot",element.__.player_index)){
+						if (input_check(PXLUI_UI_BUTTON,element.__.player_index)){
 							element.__.held = true;	
 						}
-						//array_push(element_pos,id);
 					}
 				}
 			}
 		}
 		
-		if (input_check_repeat("up",player_index,,1)){
+		if (input_check_repeat(PXLUI_UI_UP,player_index)){
 			//find the nearest interactable from the cursor
 			if (currentInteractable != -1){
 				if (currentInteractable.object_index = oPXLUIInputField){
@@ -339,17 +317,17 @@ function pxlui_create(_player_index = 0) constructor{
 				}
 			}
 			
-			with(pPXLUIElement){
-				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (other.cursor_inst.yGui > id.y + PXLUI_NAV_PADDING){
-						if (id.y != other.currentInteractable.y || other.currentInteractable = -1){
-							var _x = id.x;
-							var _y = id.y;
+			with(oPXLUIHandler){
+				if (element.interactable && id.visible && id != other.currentInteractable){
+					if (other.cursor_instance.yGui > element.y + PXLUI_NAV_PADDING){
+						if (element.y != other.currentInteractable.element.y || other.currentInteractable = -1){
+							var _x = element.x;
+							var _y = element.y;
 							//if (other.currentInteractable != -1){
 							//	_x = other.currentInteractable.x;
 							//	_y = other.currentInteractable.y;
 							//}
-							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_inst.xGui, other.cursor_inst.yGui, _x, _y));
+							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_instance.xGui, other.cursor_instance.yGui, _x, _y));
 						}
 					}
 				}
@@ -357,7 +335,7 @@ function pxlui_create(_player_index = 0) constructor{
 			update_cursor = true;
 		}
 		
-		if (input_check_repeat("down",player_index,,1)){
+		if (input_check_repeat(PXLUI_UI_DOWN,player_index)){
 			//find the nearest interactable from the cursor
 			if (currentInteractable != -1){
 				if (currentInteractable.object_index = oPXLUIInputField){
@@ -393,17 +371,17 @@ function pxlui_create(_player_index = 0) constructor{
 				}
 			}
 			
-			with(pPXLUIElement){
-				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (other.cursor_inst.yGui < id.y - PXLUI_NAV_PADDING){
-						if (id.y != other.currentInteractable.y || other.currentInteractable = -1){
-							var _x = id.x;
-							var _y = id.y;
+			with(oPXLUIHandler){
+				if (element.interactable && id.visible && id != other.currentInteractable){
+					if (other.cursor_instance.yGui < element.y - PXLUI_NAV_PADDING){
+						if (element.y != other.currentInteractable.element.y || other.currentInteractable = -1){
+							var _x = element.x;
+							var _y = element.y;
 							//if (other.currentInteractable != -1){
 							//	_x = other.currentInteractable.x;
 							//	_y = other.currentInteractable.y;
 							//}
-							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_inst.xGui, other.cursor_inst.yGui, _x, _y));
+							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_instance.xGui, other.cursor_instance.yGui, _x, _y));
 						}
 					}
 				}
@@ -412,7 +390,7 @@ function pxlui_create(_player_index = 0) constructor{
 			update_cursor = true;
 		}
 		
-		if (input_check_repeat("left",player_index,,1)){
+		if (input_check_repeat(PXLUI_UI_LEFT,player_index)){
 			//find the nearest interactable from the cursor
 			if (currentInteractable != -1){
 				if (currentInteractable.object_index = oPXLUIInputField){
@@ -450,17 +428,17 @@ function pxlui_create(_player_index = 0) constructor{
 				}
 			}
 			
-			with(pPXLUIElement){
-				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (other.cursor_inst.xGui > id.x + PXLUI_NAV_PADDING){
-						if (id.x != other.currentInteractable.x || other.currentInteractable = -1){
-							var _x = id.x;
-							var _y = id.y;
+			with(oPXLUIHandler){
+				if (element.interactable && id.visible && id != other.currentInteractable){
+					if (other.cursor_instance.xGui > element.x + PXLUI_NAV_PADDING){
+						if (element.x != other.currentInteractable.element.x || other.currentInteractable = -1){
+							var _x = element.x;
+							var _y = element.y;
 							//if (other.currentInteractable != -1){
 							//	_x = other.currentInteractable.x;
 							//	_y = other.currentInteractable.y;
 							//}
-							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_inst.xGui, other.cursor_inst.yGui, _x, _y));
+							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_instance.xGui, other.cursor_instance.yGui, _x, _y));
 						}
 					}
 				}
@@ -468,7 +446,7 @@ function pxlui_create(_player_index = 0) constructor{
 			update_cursor = true;
 		}
 		
-		if (input_check_repeat("right",player_index,,1)){
+		if (input_check_repeat(PXLUI_UI_RIGHT,player_index)){
 			//find the nearest interactable from the cursor
 			if (currentInteractable != -1){
 				if (currentInteractable.object_index = oPXLUIInputField){
@@ -506,17 +484,17 @@ function pxlui_create(_player_index = 0) constructor{
 				}
 			}
 			
-			with(pPXLUIElement){
-				if (id.interactable && id.visible && id != other.currentInteractable){
-					if (other.cursor_inst.xGui <  id.x - PXLUI_NAV_PADDING){
-						if (id.x != other.currentInteractable.x || other.currentInteractable = -1){
-							var _x = id.x;
-							var _y = id.y;
+			with(oPXLUIHandler){
+				if (element.interactable && id.visible && id != other.currentInteractable){
+					if (other.cursor_instance.xGui <  id.x - PXLUI_NAV_PADDING){
+						if (element.x != other.currentInteractable.element.x || other.currentInteractable = -1){
+							var _x = element.x;
+							var _y = element.y;
 							//if (other.currentInteractable != -1){
 							//	_x = other.currentInteractable.x;
 							//	_y = other.currentInteractable.y;
 							//}
-							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_inst.xGui, other.cursor_inst.yGui, _x, _y));
+							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_instance.xGui, other.cursor_instance.yGui, _x, _y));
 						}
 					}
 				}
@@ -529,31 +507,9 @@ function pxlui_create(_player_index = 0) constructor{
 				var _nearest = ds_priority_find_min(uiPriority);
 				var _x = -1, _y = -1;
 				switch(_nearest.object_index){
-					case oPXLUISlider:
-						_x = _nearest.id.x+_nearest.id.xalign+_nearest.id.width/2;
-						_y = _nearest.id.y+_nearest.id.yalign+_nearest.id.height/2;
-					break;
-					
-					case oPXLUIScrollView:
-						if (array_length(_nearest.children) != 0){
-							_x = _nearest.children[_nearest.currentElement].x+_nearest.x;
-							_y = _nearest.children[_nearest.currentElement].y+_nearest.y;
-						}
-					break;
-					
-					case oPXLUICard:
-						_x = _nearest.id.x;
-						_y = _nearest.id.y;
-					break;
-					
-					case oPXLUISlot:
-						_x = _nearest.id.x;
-						_y = _nearest.id.y;
-					break;
-					
 					default:
-						_x = _nearest.id.x+_nearest.id.xalign;
-						_y = _nearest.id.y+_nearest.id.yalign;
+						_x = _nearest.element.x;
+						_y = _nearest.element.y;
 					break;
 				}
 				
@@ -565,27 +521,6 @@ function pxlui_create(_player_index = 0) constructor{
 			}
 			ds_priority_clear(uiPriority);	
 			update_cursor = false;
-		}
-			
-		if (loading_page != -1){
-			loading_page_delay--;
-			
-			if (loading_page_delay < 0){
-				var _element = loading_page[loading_page_increment];
-				load_element(loading_pageName, _element, loading_pageLayer);
-				
-				loading_page_increment++;
-				loading_page_delay = loading_page_delay_length;
-				
-				if (loading_page_increment > array_length(loading_page)-1){
-					loading_page = -1;
-					loading_page_delay = -1;
-					loading_page_delay_length = -1;
-					
-					loading_page_increment = 0;
-					loading_pageName = "";
-				}
-			}
 		}
 	}
 }

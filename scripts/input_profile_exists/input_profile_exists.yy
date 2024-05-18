@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "input_profile_exists",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "16  Profiles",
-    "path": "folders/Extensions/Input/16  Profiles.yy",
+  "$GMScript":"",
+  "%Name":"input_profile_exists",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"input_profile_exists",
+  "parent":{
+    "name":"16  Profiles",
+    "path":"folders/Extensions/Input/16  Profiles.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

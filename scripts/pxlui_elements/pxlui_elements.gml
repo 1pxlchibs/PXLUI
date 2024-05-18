@@ -1,9 +1,25 @@
+function pxlui_group(_groupRef, _x, _y, _config = {}){
+	//add a group to the book
+	var _temp_group = variable_clone(_groupRef);
+	
+	_temp_group[$ "x"] = _x;
+	_temp_group[$ "y"] = _y;
+	_temp_group[$ "width"] = _config[$ "width"] ?? _groupRef[$ "width"];
+	_temp_group[$ "height"] = _config[$ "height"] ?? _groupRef[$ "height"];
+	_temp_group[$ "halign"] = _config[$ "halign"] ?? _groupRef[$ "halign"];
+	_temp_group[$ "valign"] = _config[$ "valign"] ?? _groupRef[$ "valign"];
+	
+	return _temp_group; //reverse array for correct rendering order
+}
+
 function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	var _self = self;
 	__ = {};
 
 	interactable = false;
-
+	
+	xstart = _x;
+	ystart = _y;
 	x = _x;
 	y = _y;
 	
@@ -126,7 +142,7 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 		var _y1 = y + collision.y1;
 		var _y2 = y + collision.y2;
 		if (interactable){
-			return point_in_rectangle(__.cursor_inst.xGui, __.cursor_inst.yGui, _x1, _y1, _x2, _y2);	
+			return point_in_rectangle(__.cursor_instance.xGui, __.cursor_instance.yGui, _x1, _y1, _x2, _y2);	
 		}
 	}
 		
@@ -142,10 +158,10 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 		page = -1;
 		group = -1;
 	
-		cursor_inst = -1;
+		cursor_instance = -1;
 		layer_id = -1;
 	
-		initalized = false;
+		initialized = false;
 		
 		hover = false;
 		pressed = false;
@@ -305,11 +321,51 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	};
 	
 	// = EVENTS =====================
+	on_initialize(function(){
+		__.initialized = true;
+	})
 	on_begin_step(function(){
 		__.hover = false;
 		__.pressed = false;
-		if (!input_check("shoot")){
+		if (!input_check(PXLUI_UI_BUTTON)){
 			__.held = false;
+		}
+	});
+}
+	
+function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+	width = _config[$ "width"] ?? -1;
+	height = _config[$ "height"] ?? -1;
+	
+	// = EVENTS =====================
+	on_initialize(function(){
+		var _width = width;
+		var _height = height;
+		
+		if (text != -1){
+			scribbleText = scribble(text);
+			scribbleText.align(halign,valign);
+			
+			_width = round(min(width,scribbleText.get_width()+padding.left+padding.right));
+			_height = round(min(height,scribbleText.get_height()+padding.bottom+padding.top));
+		}		
+		
+		if (!_width % 2 == 0){ //check if number is even, if not make it so
+			_width++;	
+		}
+		
+		if (!_height % 2 == 0){ //check if number is even, if not make it so
+			_height++;	
+		}
+		
+		width = _width;
+		height = _height;
+		
+		get_alignments();
+	});
+	on_drawGUI(function(){
+		if (text != -1){
+			scribbleText.wrap(width,height).draw(x+xoffset+text_xoffset,y+yoffset+text_yoffset);
 		}
 	});
 }
@@ -319,9 +375,11 @@ function pxlui_sprite(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,
 	
 	sprite_index = _config[$ "sprite_index"] ?? noone;
 	image_index = _config[$ "image_index"] ?? 0;
-	image_speed = _config[$ "image_speed"] ?? 1;
+	image_speed = _config[$ "image_speed"] ?? sprite_get_speed(sprite_index);
 	image_xscale = _config[$ "image_xscale"] ?? 1;
 	image_yscale = _config[$ "image_yscale"] ?? 1;
+		
+	
 	
 	// = EVENTS =====================
 	on_initialize(function(){
@@ -330,6 +388,10 @@ function pxlui_sprite(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,
 		get_alignments();
 	});
 	on_drawGUI(function(){
+		if (image_speed != 0){ 
+			image_index += image_speed/PXLUI_GAMESPEED;
+		}
+		
 		var _sprite_xoffset = sprite_get_xoffset(sprite_index)*image_xscale;
 		var _sprite_yoffset = sprite_get_yoffset(sprite_index)*image_yscale;
 		
@@ -539,8 +601,8 @@ function pxlui_checkbox(_x,_y, _config = {}, _elementid = 0) : pxlui_button(_x,_
 		
 		var _sprite_ow = (width/sprite_get_width(sprite_index));
 		var _sprite_oh = (height/sprite_get_height(sprite_index));
-		var _sprite_w = (width/sprite_get_width(sprite_index))+(__.animation_value*animation_xscale);
-		var _sprite_h = (height/sprite_get_height(sprite_index))+(__.animation_value*animation_yscale);
+		var _sprite_w = _sprite_ow+(__.animation_value*animation_xscale);
+		var _sprite_h = _sprite_oh+(__.animation_value*animation_yscale);
 		
 		draw_sprite_ext(sprite_index,toggle,x+xoffset+xalign+_sprite_xoffset*_sprite_ow,y+yoffset+yalign+_sprite_yoffset*_sprite_oh, _sprite_w,_sprite_h,angle,color,alpha);
 	});
@@ -568,6 +630,10 @@ function pxlui_slider(_x,_y,_config = {}, _elementid = 0) : pxlui_button(_x,_y,_
 	increment = _config[$ "increment"] ?? 0.1;
 	variable = _config[$ "variable"] ?? [self,"value"];
 	
+	remap = function(val, min1, max1, min2, max2) {
+		return min2 + (max2 - min2) * ((val - min1) / (max1 - min1));
+	}
+	
 	set = function(_value) {
 		// floor value to nearest interval amount
 		_value = (floor(_value / increment) * increment);
@@ -590,10 +656,6 @@ function pxlui_slider(_x,_y,_config = {}, _elementid = 0) : pxlui_button(_x,_y,_
 		}
 		return variable_struct_get(variable[0],variable[1]);
 	}
-	
-	remap = function(val, min1, max1, min2, max2) {
-		return min2 + (max2 - min2) * ((val - min1) / (max1 - min1));
-	}
 
 	// = EVENTS =====================
 	on_initialize(function(){
@@ -602,7 +664,7 @@ function pxlui_slider(_x,_y,_config = {}, _elementid = 0) : pxlui_button(_x,_y,_
 	});
 	on_step(function(){
 		if (__.held){
-			var _val = remap(clamp(__.cursor_inst.xGui, x + xalign, x + xalign + width), x + xalign, x + xalign + width, minimum, maximum);
+			var _val = remap(clamp(__.cursor_instance.xGui, x + xalign, x + xalign + width), x + xalign, x + xalign + width, minimum, maximum);
 			set(_val);
 		} else{
 			if (value != get()){

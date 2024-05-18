@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "input_motion_data_get",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "21  Gyro & Motion",
-    "path": "folders/Extensions/Input/21  Gyro & Motion.yy",
+  "$GMScript":"",
+  "%Name":"input_motion_data_get",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"input_motion_data_get",
+  "parent":{
+    "name":"21  Gyro & Motion",
+    "path":"folders/Extensions/Input/21  Gyro & Motion.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

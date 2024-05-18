@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "pxlui_container",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "Elements",
-    "path": "folders/PXLUI/Elements.yy",
+  "$GMScript":"",
+  "%Name":"pxlui_container",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"pxlui_container",
+  "parent":{
+    "name":"Elements",
+    "path":"folders/PXLUI/Elements.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "input_keyboard_check_pressed",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "26  Keyboard (Direct)",
-    "path": "folders/Extensions/Input/26  Keyboard (Direct).yy",
+  "$GMScript":"",
+  "%Name":"input_keyboard_check_pressed",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"input_keyboard_check_pressed",
+  "parent":{
+    "name":"26  Keyboard (Direct)",
+    "path":"folders/Extensions/Input/26  Keyboard (Direct).yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "pxlui_config",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "System",
-    "path": "folders/PXLUI/System.yy",
+  "$GMScript":"",
+  "%Name":"pxlui_config",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"pxlui_config",
+  "parent":{
+    "name":"System",
+    "path":"folders/PXLUI/System.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }

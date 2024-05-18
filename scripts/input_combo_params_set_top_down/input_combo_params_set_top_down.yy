@@ -1,11 +1,13 @@
 {
-  "resourceType": "GMScript",
-  "resourceVersion": "1.0",
-  "name": "input_combo_params_set_top_down",
-  "isCompatibility": false,
-  "isDnD": false,
-  "parent": {
-    "name": "27  Combos",
-    "path": "folders/Extensions/Input/27  Combos.yy",
+  "$GMScript":"",
+  "%Name":"input_combo_params_set_top_down",
+  "isCompatibility":false,
+  "isDnD":false,
+  "name":"input_combo_params_set_top_down",
+  "parent":{
+    "name":"27  Combos",
+    "path":"folders/Extensions/Input/27  Combos.yy",
   },
+  "resourceType":"GMScript",
+  "resourceVersion":"2.0",
 }
