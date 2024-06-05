@@ -283,39 +283,6 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		if (input_check_repeat(PXLUI_UI_UP,player_index)){
 			//find the nearest interactable from the cursor
-			if (currentInteractable != -1){
-				if (currentInteractable.object_index = oPXLUIInputField){
-					if (currentInteractable.type) return;
-				}
-				
-				if (currentInteractable.object_index = oPXLUIScrollView){
-					with(currentInteractable){
-						if (layout = PXLUI_ORIENTATION.VERTICAL){
-							if (array_length(children) != 0){
-								if (currentElement > 0){
-									currentElement--;
-								
-									if (children[currentElement].y+y <= y){
-										offset.y += children[currentElement].height+padding[1];
-										refresh(id);
-									
-										exit;
-									}
-								
-									var _x, _y;
-									_x = children[currentElement].x+x;
-									_y = children[currentElement].y+y;
-		
-									window_mouse_set(_x*pxlui_get_gui_xscale(),_y*pxlui_get_gui_yscale());
-									input_cursor_set(_x,_y);
-						
-									exit;
-								}
-							}
-						}
-					}
-				}
-			}
 			
 			with(oPXLUIHandler){
 				if (element.interactable && id.visible && id != other.currentInteractable){
@@ -337,39 +304,6 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		if (input_check_repeat(PXLUI_UI_DOWN,player_index)){
 			//find the nearest interactable from the cursor
-			if (currentInteractable != -1){
-				if (currentInteractable.object_index = oPXLUIInputField){
-					if (currentInteractable.type) return;
-				}
-				
-				if (currentInteractable.object_index = oPXLUIScrollView){
-					with(currentInteractable){
-						if (layout = PXLUI_ORIENTATION.VERTICAL){
-							if (array_length(children) != 0){
-								if (currentElement < array_length(children)-1){
-									currentElement++;
-								
-									if (children[currentElement].y+y >= y+height){
-										offset.y -= children[currentElement].height+padding[1];
-										refresh(id);
-									
-										exit;
-									}
-								
-									var _x, _y;
-									_x = children[currentElement].x+x;
-									_y = children[currentElement].y+y;
-		
-									window_mouse_set(_x*pxlui_get_gui_xscale(),_y*pxlui_get_gui_yscale());
-									input_cursor_set(_x,_y);
-						
-									exit;
-								}
-							}
-						}
-					}
-				}
-			}
 			
 			with(oPXLUIHandler){
 				if (element.interactable && id.visible && id != other.currentInteractable){
@@ -392,41 +326,6 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		if (input_check_repeat(PXLUI_UI_LEFT,player_index)){
 			//find the nearest interactable from the cursor
-			if (currentInteractable != -1){
-				if (currentInteractable.object_index = oPXLUIInputField){
-					if (currentInteractable.type) return;
-				}
-				
-				if (currentInteractable.object_index = oPXLUISlider) return;
-				
-				if (currentInteractable.object_index = oPXLUIScrollView){
-					with(currentInteractable){
-						if (layout = PXLUI_ORIENTATION.HORIZONTAL){
-							if (array_length(children) != 0){
-								if (currentElement > 0){
-									currentElement--;
-								
-									if (children[currentElement].x+x <= x){
-										offset.x += children[currentElement].width+padding[0];
-										refresh(id);
-									
-										exit;
-									}
-								
-									var _x, _y;
-									_x = children[currentElement].x+x;
-									_y = children[currentElement].y+y;
-		
-									window_mouse_set(_x*pxlui_get_gui_xscale(),_y*pxlui_get_gui_yscale());
-									input_cursor_set(_x,_y);
-						
-									exit;
-								}
-							}
-						}
-					}
-				}
-			}
 			
 			with(oPXLUIHandler){
 				if (element.interactable && id.visible && id != other.currentInteractable){
@@ -448,52 +347,14 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		if (input_check_repeat(PXLUI_UI_RIGHT,player_index)){
 			//find the nearest interactable from the cursor
-			if (currentInteractable != -1){
-				if (currentInteractable.object_index = oPXLUIInputField){
-					if (currentInteractable.type) return;
-				}
-				
-				if (currentInteractable.object_index = oPXLUISlider) return;
-				
-				if (currentInteractable.object_index = oPXLUIScrollView){
-					with(currentInteractable){
-						if (layout = PXLUI_ORIENTATION.HORIZONTAL){
-							if (array_length(children) != 0){
-								if (currentElement < array_length(children)-1){
-									currentElement++;
-								
-									if (children[currentElement].x+x >= x+width){
-										offset.x-= children[currentElement].width+padding[0];
-										refresh(id);
-									
-										exit;
-									}
-								
-									var _x, _y;
-									_x = children[currentElement].x+x;
-									_y = children[currentElement].y+y;
-		
-									window_mouse_set(_x*pxlui_get_gui_xscale(),_y*pxlui_get_gui_yscale());
-									input_cursor_set(_x,_y);
-						
-									exit;
-								}
-							}
-						}
-					}
-				}
-			}
-			
+
 			with(oPXLUIHandler){
 				if (element.interactable && id.visible && id != other.currentInteractable){
 					if (other.cursor_instance.xGui <  id.x - PXLUI_NAV_PADDING){
 						if (element.x != other.currentInteractable.element.x || other.currentInteractable = -1){
 							var _x = element.x;
 							var _y = element.y;
-							//if (other.currentInteractable != -1){
-							//	_x = other.currentInteractable.x;
-							//	_y = other.currentInteractable.y;
-							//}
+
 							ds_priority_add(other.uiPriority, id, point_distance(other.cursor_instance.xGui, other.cursor_instance.yGui, _x, _y));
 						}
 					}
@@ -508,8 +369,20 @@ function pxlui_create(_player_index = 0) constructor{
 				var _x = -1, _y = -1;
 				switch(_nearest.object_index){
 					default:
-						_x = _nearest.element.x;
-						_y = _nearest.element.y;
+						var _ex = _nearest.element.x;
+						var _ey = _nearest.element.y;
+						
+						var _x1 = _ex+_nearest.element.collision.x1;
+						var _x2 = _ex+_nearest.element.collision.x2;
+						
+						var _y1 = _ey+_nearest.element.collision.y1;
+						var _y2 = _ey+_nearest.element.collision.y2;
+						
+						var x_center = (_x1 + _x2) / 2;
+						var y_center = (_y1 + _y2) / 2;
+						
+						_x = x_center;
+						_y = y_center;
 					break;
 				}
 				

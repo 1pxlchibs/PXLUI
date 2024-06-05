@@ -27,7 +27,7 @@ var _group1 = pxlui.add_group("group1",[
 		animation_curve: PXLUI_CURVES.ease_in,
 		halign: fa_center,
 	}),
-	new pxlui_checkbox("50","25",{halign: fa_center}),
+	new pxlui_checkbox("50","25",{halign: fa_center, valign: fa_bottom}),
 	new pxlui_slider("50","30",{halign: fa_center}),
 ]);
 
