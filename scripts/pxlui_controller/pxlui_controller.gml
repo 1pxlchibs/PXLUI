@@ -39,13 +39,10 @@ function pxlui_create(_player_index = 0) constructor{
 		}
 		return -1;
 	}
-	
-	///@Description create supplied element.
-	///@param pageName Page name.
-	///@param groupName.
-	///@param element pxlui element.
-	///@param _layer layer to create it on.
-	function load_element(pageName, _group, _element, _layer){
+		
+	///@Description Calculates the position of the element accounting for its group
+	///@param elementid Element ID.
+	function calculate_position(_group,_element){
 		//get the group x and y
 		var _group_x = _group.x;
 		var _group_y = _group.y;
@@ -54,12 +51,12 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		//if string, position is percentage, so convert
 		if (is_string(_group_x)){
-			_group_t_x = PXLUI_UI_W * (real(_group_x) / 100);	
+			_group_t_x = window_get_width() * (real(_group_x) / 100);	
 		} else{
 			_group_t_x = _group_x;	
 		}
 		if (is_string(_group_y)){
-			_group_t_y = PXLUI_UI_H * (real(_group_y) / 100);	
+			_group_t_y = window_get_height() * (real(_group_y) / 100);	
 		} else{
 			_group_t_y = _group_y;	
 		}
@@ -93,11 +90,22 @@ function pxlui_create(_player_index = 0) constructor{
 			t_y = (_group_t_y + _y) + _group_yoffset;	
 		}
 		
+		return {x: t_x, y: t_y};
+	}
+	
+	///@Description create supplied element.
+	///@param pageName Page name.
+	///@param groupName.
+	///@param element pxlui element.
+	///@param _layer layer to create it on.
+	function load_element(pageName, _group, _element, _layer){
+		var _pos = calculate_position(_group, _element);
+		
 		//create the instance
-		var inst = instance_create_layer(t_x, t_y,_layer, oPXLUIHandler, {element: _element});
+		var inst = instance_create_layer(_pos.x, _pos.y,_layer, oPXLUIHandler, {element: _element});
 		inst.element.__.inst_id = inst;
 		inst.element.__.page = pageName;
-		inst.element.__.group = _group.name;
+		inst.element.__.group = _group.__.elementid;
 		inst.element.__.cursor_instance = cursor_instance;
 		inst.element.__.player_index = player_index;
 		inst.element.__.layer_id = _layer;
@@ -106,8 +114,6 @@ function pxlui_create(_player_index = 0) constructor{
 		inst.element.__.pxlui = self;
 		
 		inst.element.initialize();
-		
-		
 	}
 	
 	///@description Add a page to PXLUI populated with the elements supplied
@@ -134,6 +140,7 @@ function pxlui_create(_player_index = 0) constructor{
 		var _h = _config[$ "height"] ?? PXLUI_UI_H;
 		var _halign = _config[$ "halign"] ?? fa_left;
 		var _valign = _config[$ "valign"] ?? fa_top;
+		var _sprite = _config[$ "sprite_index"] ?? -1;
 		var _struct = {
 			name: groupName,
 			x: 0,
@@ -142,12 +149,52 @@ function pxlui_create(_player_index = 0) constructor{
 			height: _h,
 			halign: _halign,
 			valign: _valign,
-			array: array_reverse(_groupArray),
+			sprite_index: _sprite,
+			array: array_reverse(_groupArray) //reverse array for correct rendering order
 		}	
 		
-		uiBook.groups[$ groupName] = _struct; //reverse array for correct rendering order
+		uiBook.groups[$ groupName] = _struct; 
 		
 		return uiBook.groups[$ groupName];
+	}
+		
+	function load_group(pageName,group,__layer){
+		var _elements = group.array;
+		
+		var _group_x = group.x;
+		var _group_y = group.y;
+		
+		var _group_t_x = 0;
+		var _group_t_y = 0;
+		//if string, position is percentage, so convert
+		if (is_string(_group_x)){
+			_group_t_x = window_get_width() * (real(_group_x) / 100);	
+		} else{
+			_group_t_x = _group_x;	
+		}
+		if (is_string(_group_y)){
+			_group_t_y = window_get_height() * (real(_group_y) / 100);	
+		} else{
+			_group_t_y = _group_y;	
+		}
+	
+		
+		var inst = instance_create_layer(_group_t_x, _group_t_y,__layer, oPXLUIHandler, {element: group});
+		inst.element.__.inst_id = inst;
+		inst.element.__.page = pageName;
+		inst.element.__.group = group.__.elementid;
+		inst.element.__.cursor_instance = cursor_instance;
+		inst.element.__.player_index = player_index;
+		inst.element.__.layer_id = __layer;
+		
+		//give the instance a reference to this system
+		inst.element.__.pxlui = self;
+		
+		inst.element.initialize();
+		for(var j = 0; j < array_length(_elements); j++) {
+			var _element = _elements[j];
+			load_element(pageName, group, _element, __layer);
+		}
 	}
 	
 	///@description This creates a renderer for PXLUI assigned to the layer specified.
@@ -230,12 +277,7 @@ function pxlui_create(_player_index = 0) constructor{
 			//load elements with a for loop
 			for(var i = 0; i < array_length(_page); i++) {
 				var _group = _page[i];
-				var _elements = _group.array;
-				for(var j = 0; j < array_length(_elements); j++) {
-					var _element = _elements[j];
-					load_element(pageName, _group, _element, __layer);
-				}
-				
+				load_group(pageName,_group,__layer);
 			}
 			render(__layer);
 		}

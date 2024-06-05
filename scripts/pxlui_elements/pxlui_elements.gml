@@ -1,17 +1,3 @@
-function pxlui_group(_groupRef, _x, _y, _config = {}){
-	//add a group to the book
-	var _temp_group = variable_clone(_groupRef);
-	
-	_temp_group[$ "x"] = _x;
-	_temp_group[$ "y"] = _y;
-	_temp_group[$ "width"] = _config[$ "width"] ?? _groupRef[$ "width"];
-	_temp_group[$ "height"] = _config[$ "height"] ?? _groupRef[$ "height"];
-	_temp_group[$ "halign"] = _config[$ "halign"] ?? _groupRef[$ "halign"];
-	_temp_group[$ "valign"] = _config[$ "valign"] ?? _groupRef[$ "valign"];
-	
-	return _temp_group; //reverse array for correct rendering order
-}
-
 function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	var _self = self;
 	__ = {};
@@ -22,6 +8,9 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	ystart = _y;
 	x = _x;
 	y = _y;
+	
+	xscale = _config[$ "xscale"] ?? 1;
+	yscale = _config[$ "yscale"] ?? 1;
 	
 	xoffset = _config[$ "xoffset"] ?? 0;
 	yoffset = _config[$ "yoffset"] ?? 0;
@@ -332,7 +321,44 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 		}
 	});
 }
+
+function pxlui_group(_x, _y, _array, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid = 0) constructor{
+	width = _config[$ "width"] ?? PXLUI_UI_W;
+	height = _config[$ "height"] ?? PXLUI_UI_H;
+	sprite_index = _config[$ "sprite_index"] ?? noone;
+	image_index = _config[$ "image_index"] ?? 0;
 	
+	var _speed = 0;
+	var _sprite_w = 1;
+	var _sprite_h = 1;
+	if (sprite_index != noone){
+		_speed = sprite_get_speed(sprite_index);
+		_sprite_w = sprite_get_width(sprite_index);
+		_sprite_h = sprite_get_height(sprite_index);
+	}
+	image_speed = _config[$ "image_speed"] ?? _speed;
+	image_xscale = _config[$ "image_xscale"] ?? width/_sprite_w;
+	image_yscale = _config[$ "image_yscale"] ?? height/_sprite_h;
+	
+	array = array_reverse(_array);
+	
+	on_initialize(function(){
+		get_alignments();
+	});
+	on_drawGUI(function(){
+		if (sprite_index != noone){
+			if (image_speed != 0){ 
+				image_index += image_speed/PXLUI_GAMESPEED;
+			}
+		
+			var _sprite_xoffset = sprite_get_xoffset(sprite_index)*image_xscale;
+			var _sprite_yoffset = sprite_get_yoffset(sprite_index)*image_yscale;
+		
+			draw_sprite_ext(sprite_index,image_index,x+xoffset+xalign+_sprite_xoffset,y+yoffset+yalign+_sprite_yoffset,image_xscale,image_yscale,angle,color,alpha);
+		}
+	})
+}
+
 function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
 	width = _config[$ "width"] ?? -1;
 	height = _config[$ "height"] ?? -1;
@@ -343,11 +369,9 @@ function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_c
 		var _height = height;
 		
 		if (text != -1){
-			scribbleText = scribble(text);
-			scribbleText.align(halign,valign);
-			
-			_width = round(min(width,scribbleText.get_width()+padding.left+padding.right));
-			_height = round(min(height,scribbleText.get_height()+padding.bottom+padding.top));
+			draw_set_font(fnt_monogram);
+			_width = round(min(width,string_width(text)+padding.left+padding.right));
+			_height = round(min(height,string_height(text)+padding.bottom+padding.top));
 		}		
 		
 		if (!_width % 2 == 0){ //check if number is even, if not make it so
@@ -365,7 +389,14 @@ function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_c
 	});
 	on_drawGUI(function(){
 		if (text != -1){
-			scribbleText.wrap(width,height).draw(x+xoffset+text_xoffset,y+yoffset+text_yoffset);
+			draw_set_font(fnt_monogram);
+			draw_set_color(color)
+			draw_set_halign(halign);
+			draw_set_valign(valign);
+			draw_text_ext_transformed(x+xoffset+text_xoffset,y+yoffset+text_yoffset,text,-1,width,xscale,yscale,angle);
+			draw_set_color(c_white)
+			draw_set_halign(fa_left);
+			draw_set_valign(fa_bottom);
 		}
 	});
 }
@@ -418,20 +449,12 @@ function pxlui_button(_x,_y, _config = {}, _elementid = 0) : pxlui_element(_x,_y
 		var _height = height;
 		
 		if (text != -1){
-			scribbleText = scribble(text);
-			scribbleText.align(halign,valign);
-			
-			_width = round(max(width,scribbleText.get_width()+padding.left+padding.right));
-			_height = round(max(height,scribbleText.get_height()+padding.bottom+padding.top));
+			draw_set_font(fnt_monogram);
+			_width = round(max(width,string_width(text)+padding.left+padding.right));
+			_height = round(max(height,string_height(text)+padding.bottom+padding.top));
 		}		
 		
-		if (!_width % 2 == 0){ //check if number is even, if not make it so
-			_width++;	
-		}
-		
-		if (!_height % 2 == 0){ //check if number is even, if not make it so
-			_height++;	
-		}
+                  
 		
 		width = _width;
 		height = _height;
@@ -548,7 +571,12 @@ function pxlui_button(_x,_y, _config = {}, _elementid = 0) : pxlui_element(_x,_y
 		draw_sprite_ext(sprite_index,image_index,x+xoffset+xalign+_sprite_xoffset*_sprite_ow,y+yoffset+yalign+_sprite_yoffset*_sprite_oh, _sprite_w,_sprite_h,angle,color,alpha);
 		
 		if (text != -1){
-			scribbleText.draw(x+xoffset+text_xoffset,y+yoffset+text_yoffset);
+			draw_set_font(fnt_monogram);
+			draw_set_halign(halign);
+			draw_set_valign(valign);
+			draw_text_ext_transformed(x+xoffset+text_xoffset,y+yoffset+text_yoffset,text,-1,width,xscale,yscale,angle);
+			draw_set_halign(fa_left);
+			draw_set_valign(fa_bottom);
 		}
 	});
 }

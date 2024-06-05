@@ -6,11 +6,11 @@ refreshGUI = function(width = undefined, height = undefined){
 	var tar_width = width ?? PXLUI_UI_W;
 	var tar_height = height ?? PXLUI_UI_H;
 	
-	var _gui_xscale = global.pxlui_settings.ResW/PXLUI_UI_W;
-	var _gui_yscale = global.pxlui_settings.ResH/PXLUI_UI_H;
+	var _gui_xscale = window_get_width()/PXLUI_UI_W;
+	var _gui_yscale = window_get_height()/PXLUI_UI_H;
 	
 	display_set_gui_size(PXLUI_UI_W,PXLUI_UI_H);
-	display_set_gui_maximize(_gui_xscale,_gui_xscale,0,0)
+	display_set_gui_maximize(_gui_xscale,_gui_yscale,0,0)
 }
 
 refreshGUI();
