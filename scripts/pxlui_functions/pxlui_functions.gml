@@ -27,8 +27,8 @@ function pxlui_gui_to_room(_x, _y){
 	
 	//returns x & y
 	return {
-		x : xx,
-		y : yy
+		x : xx * pxlui_get_gui_xscale(),
+		y : yy * pxlui_get_gui_yscale()
 	}
 }
 

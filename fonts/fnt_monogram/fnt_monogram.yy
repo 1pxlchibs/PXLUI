@@ -119,8 +119,8 @@
   "maintainGms1Font":false,
   "name":"fnt_monogram",
   "parent":{
-    "name":"PXLUI",
-    "path":"PXLUI.yyp",
+    "name":"Fonts",
+    "path":"folders/PXLUI/Fonts.yy",
   },
   "pointRounding":0,
   "ranges":[

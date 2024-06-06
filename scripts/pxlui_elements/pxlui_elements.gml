@@ -8,6 +8,7 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	ystart = _y;
 	x = _x;
 	y = _y;
+	collision = {x1: 0, y1: 0, x2: 0, y2: 0};
 	
 	xscale = _config[$ "xscale"] ?? 1;
 	yscale = _config[$ "yscale"] ?? 1;
@@ -17,7 +18,7 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	
 	halign = _config[$ "halign"] ?? fa_left;
 	valign = _config[$ "valign"] ?? fa_top;
-	collision = {x1: 0, y1: 0, x2: 0, y2: 0};
+	
 	
 	width = _config[$ "width"] ?? 0;
 	height = _config[$ "height"] ?? 0;
@@ -44,6 +45,8 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	animation_curve_in = _config[$ "animation_curve_in"] ?? _anim_curve;
 	animation_curve_out = _config[$ "animation_curve_out"] ?? _anim_curve;
 	animations = _config[$ "animations"] ?? {};
+	
+	
 	
 	// = PUBLIC =====================
 	static on_initialize = function(_callback,_data = undefined){
@@ -322,6 +325,12 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	});
 }
 
+/// @desc  a group used to create element compositions
+/// @param {any*} x  position (string numbers as %)
+/// @param {any*} y  position (string numbers as %)
+/// @param {array} array  An array containing the elements
+/// @param {struct} [config]={}  optional configuration struct
+/// @param {any*} [_elementid]=0 Description
 function pxlui_group(_x, _y, _array, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid = 0) constructor{
 	width = _config[$ "width"] ?? PXLUI_UI_W;
 	height = _config[$ "height"] ?? PXLUI_UI_H;
@@ -359,7 +368,8 @@ function pxlui_group(_x, _y, _array, _config = {}, _elementid = 0) : pxlui_eleme
 	})
 }
 
-function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+function pxlui_text(_x,_y,_text,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+	text = _text;
 	width = _config[$ "width"] ?? -1;
 	height = _config[$ "height"] ?? -1;
 	
@@ -401,17 +411,15 @@ function pxlui_text(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_c
 	});
 }
 
-function pxlui_sprite(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+function pxlui_sprite(_x,_y, _sprite, _image = 0, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
 	var _self = self;
 	
-	sprite_index = _config[$ "sprite_index"] ?? noone;
-	image_index = _config[$ "image_index"] ?? 0;
+	sprite_index = _sprite;
+	image_index = _image;
 	image_speed = _config[$ "image_speed"] ?? sprite_get_speed(sprite_index);
 	image_xscale = _config[$ "image_xscale"] ?? 1;
 	image_yscale = _config[$ "image_yscale"] ?? 1;
 		
-	
-	
 	// = EVENTS =====================
 	on_initialize(function(){
 		width = sprite_get_width(sprite_index)*image_xscale;
@@ -430,19 +438,19 @@ function pxlui_sprite(_x,_y,_config = {}, _elementid = 0) : pxlui_element(_x,_y,
 	})
 }
 
-function pxlui_button(_x,_y, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+function pxlui_button(_x,_y, _text = "button", _callback = function(){pxlui_log("PXLUI: empty button has been pressed!");}, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
 	var _self = self;
 	
 	interactable = true;
 	
+	text = _text;
+	callback = _callback;
+	
 	sprite_index = _config[$ "sprite_index"] ?? global.pxlui_theme.minimal.button;
 	image_index = _config[$ "image_index"] ?? 0;
 	image_speed = _config[$ "image_speed"] ?? 1;
+	callback = _config[$ "callback"] ?? callback;
 
-	callback = _config[$ "callback"] ?? function(){
-		pxlui_log("PXLUI: empty button has been pressed!");
-	};
-	
 	// = EVENTS =====================
 	on_initialize(function(){
 		var _width = width;
@@ -581,7 +589,7 @@ function pxlui_button(_x,_y, _config = {}, _elementid = 0) : pxlui_element(_x,_y
 	});
 }
 	
-function pxlui_checkbox(_x,_y, _config = {}, _elementid = 0) : pxlui_button(_x,_y,_config,_elementid) constructor{
+function pxlui_checkbox(_x,_y, _variable_array = [self,"toggle"], _config = {}, _elementid = 0) : pxlui_button(_x,_y,"",,_config,_elementid) constructor{
 	var _self = self;
 	
 	interactable = true;
@@ -594,7 +602,7 @@ function pxlui_checkbox(_x,_y, _config = {}, _elementid = 0) : pxlui_button(_x,_
 	height = _config[$ "height"] ?? 20;
 	
 	toggle = false;
-	check = _config[$ "variable_array"] ?? [_self,"toggle"];
+	check = _variable_array;
 	
 	callback = function(){
 		toggle = !toggle;
@@ -636,7 +644,7 @@ function pxlui_checkbox(_x,_y, _config = {}, _elementid = 0) : pxlui_button(_x,_
 	});
 }
 	
-function pxlui_slider(_x,_y,_config = {}, _elementid = 0) : pxlui_button(_x,_y,_config,_elementid) constructor{
+function pxlui_slider(_x,_y, _min, _max, _incr, _variable_array = [self,"value"], _config = {}, _elementid = 0) : pxlui_button(_x,_y,"",,_config,_elementid) constructor{
 	var _self = self;
 	
 	interactable = true;
@@ -653,10 +661,10 @@ function pxlui_slider(_x,_y,_config = {}, _elementid = 0) : pxlui_button(_x,_y,_
 	value = 0;
 	
 	tip_x = 0;
-	minimum = _config[$ "minimum"] ?? 0;
-	maximum = _config[$ "minimum"] ?? 1;
-	increment = _config[$ "increment"] ?? 0.1;
-	variable = _config[$ "variable"] ?? [self,"value"];
+	minimum = _min
+	maximum = _max
+	increment = _incr
+	variable = _variable_array
 	
 	remap = function(val, min1, max1, min2, max2) {
 		return min2 + (max2 - min2) * ((val - min1) / (max1 - min1));
