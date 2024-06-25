@@ -2,7 +2,7 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 	var _self = self;
 	__ = {};
 
-	interactable = false;
+	type = PXLUI_TYPE.base;
 	
 	xstart = _x;
 	ystart = _y;
@@ -133,7 +133,7 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 		var _x2 = x + collision.x2;
 		var _y1 = y + collision.y1;
 		var _y2 = y + collision.y2;
-		if (interactable){
+		if (type == PXLUI_TYPE.interactable){
 			return point_in_rectangle(__.cursor_instance.xGui, __.cursor_instance.yGui, _x1, _y1, _x2, _y2);	
 		}
 	}
@@ -332,6 +332,8 @@ function pxlui_element(_x,_y,_config = {},_elementid = 0) constructor{
 /// @param {struct} [config]={}  optional configuration struct
 /// @param {any*} [_elementid]=0 Description
 function pxlui_group(_x, _y, _array, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid = 0) constructor{
+	type = PXLUI_TYPE.group;
+	
 	width = _config[$ "width"] ?? PXLUI_UI_W;
 	height = _config[$ "height"] ?? PXLUI_UI_H;
 	sprite_index = _config[$ "sprite_index"] ?? noone;
@@ -369,6 +371,8 @@ function pxlui_group(_x, _y, _array, _config = {}, _elementid = 0) : pxlui_eleme
 }
 
 function pxlui_text(_x,_y,_text,_config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
+	type = PXLUI_TYPE.visual;
+	
 	text = _text;
 	width = _config[$ "width"] ?? -1;
 	height = _config[$ "height"] ?? -1;
@@ -412,7 +416,7 @@ function pxlui_text(_x,_y,_text,_config = {}, _elementid = 0) : pxlui_element(_x
 }
 
 function pxlui_sprite(_x,_y, _sprite, _image = 0, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
-	var _self = self;
+	type = PXLUI_TYPE.visual;
 	
 	sprite_index = _sprite;
 	image_index = _image;
@@ -439,9 +443,7 @@ function pxlui_sprite(_x,_y, _sprite, _image = 0, _config = {}, _elementid = 0) 
 }
 
 function pxlui_button(_x,_y, _text = "button", _callback = function(){pxlui_log("PXLUI: empty button has been pressed!");}, _config = {}, _elementid = 0) : pxlui_element(_x,_y,_config,_elementid) constructor{
-	var _self = self;
-	
-	interactable = true;
+	type = PXLUI_TYPE.interactable;
 	
 	text = _text;
 	callback = _callback;
@@ -594,10 +596,6 @@ function pxlui_button(_x,_y, _text = "button", _callback = function(){pxlui_log(
 }
 	
 function pxlui_checkbox(_x,_y, _variable_array = [self,"toggle"], _config = {}, _elementid = 0) : pxlui_button(_x,_y,"",,_config,_elementid) constructor{
-	var _self = self;
-	
-	interactable = true;
-	
 	sprite_index = _config[$ "sprite_index"] ?? global.pxlui_theme.minimal.checkbox;
 	image_index = _config[$ "image_index"] ?? 0;
 	image_speed = _config[$ "image_speed"] ?? 1;
@@ -649,10 +647,6 @@ function pxlui_checkbox(_x,_y, _variable_array = [self,"toggle"], _config = {}, 
 }
 	
 function pxlui_slider(_x,_y, _min, _max, _incr, _variable_array = [self,"value"], _config = {}, _elementid = 0) : pxlui_button(_x,_y,"",,_config,_elementid) constructor{
-	var _self = self;
-	
-	interactable = true;
-	
 	sprite_index = _config[$ "sprite_index"] ?? global.pxlui_theme.minimal.button;
 	image_index = _config[$ "image_index"] ?? 0;
 	image_speed = _config[$ "image_speed"] ?? 1;

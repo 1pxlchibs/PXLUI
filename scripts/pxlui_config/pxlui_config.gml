@@ -38,6 +38,14 @@ enum PXLUI_CURVES{
 	elastic_out
 }
 
+
+enum PXLUI_TYPE{
+	base,
+	interactable,
+	visual,
+	group,
+}
+
 global.pxlui_theme = {
 	minimal:{
 		container: spr_pxlui_button,

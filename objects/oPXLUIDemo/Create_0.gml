@@ -60,6 +60,7 @@ var _group3 = new pxlui_group("50","75",[
 ],{width: 150, height: 60, halign: fa_center, valign: fa_bottom, sprite_index: spr_pxlui_button,image_speed: 0});
 
 pxlui.add_page("DemoPage",[
+	new pxlui_sprite("50",15,spr_pxlui_logo,0),
 	_group1,
 	_group2,
 	_group3

@@ -42,38 +42,56 @@ function pxlui_create(_player_index = 0) constructor{
 		
 	///@Description Calculates the position of the element accounting for its group
 	///@param elementid Element ID.
-	function calculate_position(_group,_element){
-		//get the group x and y
-		var _group_x = _group.x;
-		var _group_y = _group.y;
-			
- 		var _group_xoffset = 0;
-		var _group_yoffset = 0;
-		switch(_group.halign){
-			case fa_middle: _group_xoffset = _group.width/2; break;
-			case fa_right: _group_xoffset = _group.width; break;
-		}
-		switch(_group.valign){
-			case fa_middle: _group_yoffset = _group.height/2; break;
-			case fa_bottom: _group_yoffset = _group.height; break;
-		}
-		
-		//get the element x and y
+	function calculate_position(_element, _group = -1){
 		var _x = _element.x;
 		var _y = _element.y;
+		
+		var _anchor_x = 0;
+		var _anchor_y = 0;
+		var _canvas_w = PXLUI_UI_W;
+		var _canvas_h = PXLUI_UI_H;
+		
+		var _offset_x = 0;
+		var _offset_y = 0;
+		
 		var t_x = 0;
 		var t_y = 0;
 		
+		if (_group != -1){
+			//get the group x and y
+			var _group_x = _group.x;
+			var _group_y = _group.y;
+			
+		 	var _group_xoffset = 0;
+			var _group_yoffset = 0;
+			switch(_group.halign){
+				case fa_middle: _group_xoffset = _group.width/2; break;
+				case fa_right: _group_xoffset = _group.width; break;
+			}
+			switch(_group.valign){
+				case fa_middle: _group_yoffset = _group.height/2; break;
+				case fa_bottom: _group_yoffset = _group.height; break;
+			}
+			
+			_anchor_x = _group_x;
+			_anchor_y = _group_y;
+			_canvas_w = _group.width;
+			_canvas_h = _group.height;
+			
+			_offset_x = _group_xoffset;
+			_offset_y = _group_yoffset;
+		}
+
 		//if string, position is percentage, so convert
 		if (is_string(_x)){
-			t_x =  (_group_x + _group.width * (real(_x) / 100)) - _group_xoffset;	
+			t_x =  (_anchor_x + _canvas_w * (real(_x) / 100)) - _offset_x;	
 		} else{
-			t_x = (_group_x + _x) - _group_xoffset;	
+			t_x = (_anchor_x + _x) - _offset_y;	
 		}
 		if (is_string(_y)){
-			t_y = (_group_y + _group.height * (real(_y) / 100)) - _group_yoffset;	
+			t_y = (_anchor_y + _canvas_h * (real(_y) / 100)) - _offset_y;	
 		} else{
-			t_y = (_group_y + _y) - _group_yoffset;	
+			t_y = (_anchor_y + _y) - _offset_y;	
 			
 		}
 		return {x: t_x, y: t_y};
@@ -81,17 +99,22 @@ function pxlui_create(_player_index = 0) constructor{
 	
 	///@Description create supplied element.
 	///@param pageName Page name.
-	///@param groupName.
 	///@param element pxlui element.
 	///@param _layer layer to create it on.
-	function load_element(pageName, _group, _element, _layer){
-		var _pos = calculate_position(_group, _element);
+	///@param [group]
+	function load_element(pageName, _element, _layer, _group = -1){
+		var _pos = calculate_position(_element, _group);
+		
+		var _group_id = -1;
+		if (_group != -1){
+			_group_id = _group.__.elementid;	
+		}
 		
 		//create the instance
 		var inst = instance_create_layer(_pos.x, _pos.y,_layer, oPXLUIHandler, {element: _element});
 		inst.element.__.inst_id = inst;
 		inst.element.__.page = pageName;
-		inst.element.__.group = _group.__.elementid;
+		inst.element.__.group = _group_id;
 		inst.element.__.cursor_instance = cursor_instance;
 		inst.element.__.player_index = player_index;
 		inst.element.__.layer_id = _layer;
@@ -118,30 +141,6 @@ function pxlui_create(_player_index = 0) constructor{
 	function delete_page(pageName){
 		//delete a page from the book
 		variable_struct_remove(uiBook.pages,pageName);
-	}
-		
-	function add_group(groupName, _groupArray, _config = {}){
-		//add a group to the book
-		var _w = _config[$ "width"] ?? PXLUI_UI_W;
-		var _h = _config[$ "height"] ?? PXLUI_UI_H;
-		var _halign = _config[$ "halign"] ?? fa_left;
-		var _valign = _config[$ "valign"] ?? fa_top;
-		var _sprite = _config[$ "sprite_index"] ?? -1;
-		var _struct = {
-			name: groupName,
-			x: 0,
-			y: 0,
-			width: _w,
-			height: _h,
-			halign: _halign,
-			valign: _valign,
-			sprite_index: _sprite,
-			array: array_reverse(_groupArray) //reverse array for correct rendering order
-		}	
-		
-		uiBook.groups[$ groupName] = _struct; 
-		
-		return uiBook.groups[$ groupName];
 	}
 		
 	function load_group(pageName,group,__layer){
@@ -178,7 +177,7 @@ function pxlui_create(_player_index = 0) constructor{
 		inst.element.initialize();
 		for(var j = 0; j < array_length(_elements); j++) {
 			var _element = _elements[j];
-			load_element(pageName, group, _element, __layer);
+			load_element(pageName, _element, __layer, group);
 		}
 	}
 	
@@ -261,8 +260,12 @@ function pxlui_create(_player_index = 0) constructor{
 			
 			//load elements with a for loop
 			for(var i = 0; i < array_length(_page); i++) {
-				var _group = _page[i];
-				load_group(pageName,_group,__layer);
+				var _element = _page[i];
+				if (_element.type == PXLUI_TYPE.group){
+					load_group(pageName,_element,__layer);
+				} else{
+					load_element(pageName,_element,__layer);
+				}
 			}
 			render(__layer);
 		}
@@ -312,7 +315,7 @@ function pxlui_create(_player_index = 0) constructor{
 			//find the nearest interactable from the cursor
 			
 			with(oPXLUIHandler){
-				if (element.interactable && id.visible && id != other.currentInteractable){
+				if (element.type == PXLUI_TYPE.interactable && id.visible && id != other.currentInteractable){
 					if (other.cursor_instance.yGui > element.y + PXLUI_NAV_PADDING){
 						if (element.y != other.currentInteractable.element.y || other.currentInteractable = -1){
 							var _x = element.x;
@@ -333,7 +336,7 @@ function pxlui_create(_player_index = 0) constructor{
 			//find the nearest interactable from the cursor
 			
 			with(oPXLUIHandler){
-				if (element.interactable && id.visible && id != other.currentInteractable){
+				if (element.type == PXLUI_TYPE.interactable && id.visible && id != other.currentInteractable){
 					if (other.cursor_instance.yGui < element.y - PXLUI_NAV_PADDING){
 						if (element.y != other.currentInteractable.element.y || other.currentInteractable = -1){
 							var _x = element.x;
@@ -355,7 +358,7 @@ function pxlui_create(_player_index = 0) constructor{
 			//find the nearest interactable from the cursor
 			
 			with(oPXLUIHandler){
-				if (element.interactable && id.visible && id != other.currentInteractable){
+				if (element.type == PXLUI_TYPE.interactable && id.visible && id != other.currentInteractable){
 					if (other.cursor_instance.xGui > element.x + PXLUI_NAV_PADDING){
 						if (element.x != other.currentInteractable.element.x || other.currentInteractable = -1){
 							var _x = element.x;
@@ -376,7 +379,7 @@ function pxlui_create(_player_index = 0) constructor{
 			//find the nearest interactable from the cursor
 
 			with(oPXLUIHandler){
-				if (element.interactable && id.visible && id != other.currentInteractable){
+				if (element.type == PXLUI_TYPE.interactable && id.visible && id != other.currentInteractable){
 					if (other.cursor_instance.xGui <  id.x - PXLUI_NAV_PADDING){
 						if (element.x != other.currentInteractable.element.x || other.currentInteractable = -1){
 							var _x = element.x;
