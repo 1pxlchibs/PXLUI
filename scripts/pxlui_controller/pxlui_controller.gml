@@ -46,30 +46,16 @@ function pxlui_create(_player_index = 0) constructor{
 		//get the group x and y
 		var _group_x = _group.x;
 		var _group_y = _group.y;
-		var _group_t_x = 0;
-		var _group_t_y = 0;
-		
-		//if string, position is percentage, so convert
-		if (is_string(_group_x)){
-			_group_t_x = window_get_width() * (real(_group_x) / 100);	
-		} else{
-			_group_t_x = _group_x;	
-		}
-		if (is_string(_group_y)){
-			_group_t_y = window_get_height() * (real(_group_y) / 100);	
-		} else{
-			_group_t_y = _group_y;	
-		}
 			
  		var _group_xoffset = 0;
 		var _group_yoffset = 0;
 		switch(_group.halign){
-			case fa_middle: _group_xoffset = -_group.width/2; break;
-			case fa_right: _group_xoffset = -_group.width; break;
+			case fa_middle: _group_xoffset = _group.width/2; break;
+			case fa_right: _group_xoffset = _group.width; break;
 		}
 		switch(_group.valign){
-			case fa_middle: _group_yoffset = -_group.height/2; break;
-			case fa_bottom: _group_yoffset = -_group.height; break;
+			case fa_middle: _group_yoffset = _group.height/2; break;
+			case fa_bottom: _group_yoffset = _group.height; break;
 		}
 		
 		//get the element x and y
@@ -80,16 +66,16 @@ function pxlui_create(_player_index = 0) constructor{
 		
 		//if string, position is percentage, so convert
 		if (is_string(_x)){
-			t_x =  (_group_t_x + _group.width * (real(_x) / 100)) + _group_xoffset;	
+			t_x =  (_group_x + _group.width * (real(_x) / 100)) - _group_xoffset;	
 		} else{
-			t_x = (_group_t_x + _x) + _group_xoffset;	
+			t_x = (_group_x + _x) - _group_xoffset;	
 		}
 		if (is_string(_y)){
-			t_y = (_group_t_y + _group.height * (real(_y) / 100)) + _group_yoffset;	
+			t_y = (_group_y + _group.height * (real(_y) / 100)) - _group_yoffset;	
 		} else{
-			t_y = (_group_t_y + _y) + _group_yoffset;	
+			t_y = (_group_y + _y) - _group_yoffset;	
+			
 		}
-		
 		return {x: t_x, y: t_y};
 	}
 	
@@ -168,18 +154,17 @@ function pxlui_create(_player_index = 0) constructor{
 		var _group_t_y = 0;
 		//if string, position is percentage, so convert
 		if (is_string(_group_x)){
-			_group_t_x = window_get_width() * (real(_group_x) / 100);	
+			_group_t_x = PXLUI_UI_W * (real(_group_x) / 100);	
 		} else{
 			_group_t_x = _group_x;	
 		}
 		if (is_string(_group_y)){
-			_group_t_y = window_get_height() * (real(_group_y) / 100);	
+			_group_t_y = PXLUI_UI_H * (real(_group_y) / 100);	
 		} else{
 			_group_t_y = _group_y;	
 		}
-	
 		
-		var inst = instance_create_layer(_group_t_x, _group_t_y,__layer, oPXLUIHandler, {element: group});
+		var inst = instance_create_layer(_group_t_x, _group_t_y, __layer, oPXLUIHandler, {element: group});
 		inst.element.__.inst_id = inst;
 		inst.element.__.page = pageName;
 		inst.element.__.group = group.__.elementid;

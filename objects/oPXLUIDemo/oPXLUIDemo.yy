@@ -9,8 +9,8 @@
   "name":"oPXLUIDemo",
   "overriddenProperties":[],
   "parent":{
-    "name":"PXLUI",
-    "path":"folders/PXLUI.yy",
+    "name":"System",
+    "path":"folders/PXLUI/System.yy",
   },
   "parentObjectId":null,
   "persistent":false,

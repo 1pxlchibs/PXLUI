@@ -450,6 +450,8 @@ function pxlui_button(_x,_y, _text = "button", _callback = function(){pxlui_log(
 	image_index = _config[$ "image_index"] ?? 0;
 	image_speed = _config[$ "image_speed"] ?? 1;
 	callback = _config[$ "callback"] ?? callback;
+	
+	text_color = _config[$ "text_color"] ?? c_white;
 
 	// = EVENTS =====================
 	on_initialize(function(){
@@ -580,9 +582,11 @@ function pxlui_button(_x,_y, _text = "button", _callback = function(){pxlui_log(
 		
 		if (text != -1){
 			draw_set_font(fnt_monogram);
+			draw_set_color(text_color);
 			draw_set_halign(halign);
 			draw_set_valign(valign);
 			draw_text_ext_transformed(x+xoffset+text_xoffset,y+yoffset+text_yoffset,text,-1,width,xscale,yscale,angle);
+			draw_set_color(c_white);
 			draw_set_halign(fa_left);
 			draw_set_valign(fa_bottom);
 		}

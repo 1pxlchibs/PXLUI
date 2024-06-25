@@ -33,18 +33,18 @@ function pxlui_gui_to_room(_x, _y){
 }
 
 function pxlui_get_gui_xscale(){
-	return global.pxlui_settings.ResW/PXLUI_UI_W;
+	return PXLUI_GAME_RES_W/PXLUI_UI_W;
 }
 
 function pxlui_get_gui_yscale(){
-	return global.pxlui_settings.ResH/PXLUI_UI_H;
+	return PXLUI_GAME_RES_H/PXLUI_UI_H;
 }
 
 function pxlui_debug_message(string){
 	if (PXLUI_DEBUG){
 		show_debug_message(string)	
 	}
-	return global.pxlui_settings.ResH/PXLUI_UI_H;
+	return PXLUI_GAME_RES_H/PXLUI_UI_H;
 }
 
 function pxlui_log(_log){

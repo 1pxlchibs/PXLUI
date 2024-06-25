@@ -5,8 +5,8 @@ var _group1 = new pxlui_group("50","50",[
 		width: 100,
 		height: 26,
 		animations:{
-			from: {image: 0, yoffset: 0},
-			to: {image: 1, yoffset: 3},
+			from: {image_index: 0, yoffset: 0, text_color: c_white},
+			to: {image_index: 1, yoffset: 3, text_color: c_black},
 		},
 		
 		animation_duration: 5,
@@ -29,7 +29,7 @@ var _group1 = new pxlui_group("50","50",[
 	}),
 	new pxlui_checkbox("50","55",,{halign: fa_center}),
 	new pxlui_slider("50","80",0,10,1,,{halign: fa_center}),
-],{width: 150, height: 160,halign: fa_center,valign: fa_center,sprite_index: spr_pxlui_button,image_speed: 0,});
+],{width: 150, height: 160,halign: fa_center,valign: fa_middle,sprite_index: spr_pxlui_button,image_speed: 0});
 
 var _group2 = new pxlui_group(0,0,[
 	new pxlui_sprite(15,15,spr_pxlui_logo,0),
@@ -40,7 +40,7 @@ var _group2 = new pxlui_group(0,0,[
 	})
 ]);
 
-var _group3 = new pxlui_group("50","95",[
+var _group3 = new pxlui_group("50","75",[
 	new pxlui_button("50","50","Exit",,{
 		width: 100,
 		height: 26,
@@ -57,7 +57,7 @@ var _group3 = new pxlui_group("50","95",[
 			game_end();	
 		}
 	}),
-],{width: 150, height: 60,halign: fa_center,valign: fa_bottom,sprite_index: spr_pxlui_button,image_speed: 0,});
+],{width: 150, height: 60, halign: fa_center, valign: fa_bottom, sprite_index: spr_pxlui_button,image_speed: 0});
 
 pxlui.add_page("DemoPage",[
 	_group1,
