@@ -31,16 +31,8 @@ var _group1 = new pxlui_group("50","50",[
 	new pxlui_slider("50","80",0,10,1,,{halign: fa_center}),
 ],{width: 150, height: 160,halign: fa_center,valign: fa_middle,sprite_index: spr_pxlui_button,image_speed: 0});
 
-var _group2 = new pxlui_group(0,0,[
-	new pxlui_sprite(15,15,spr_pxlui_logo,0),
-	new pxlui_text(15 + 120 + 15, 15,"Welcome to PXLUI 2.0.0 Alpha",{xscale: 2, yscale: 2}),
-	new pxlui_text(15 + 120 + 15, 50,"This is a work in progress ui system built for GML. It's intention is to create a more flexible UI system with powerful styling & animation configurations.",{
-		width: 450,
-		color: #606060,
-	})
-]);
 
-var _group3 = new pxlui_group("50","75",[
+var _group2 = new pxlui_group("50","75",[
 	new pxlui_button("50","50","Exit",,{
 		width: 100,
 		height: 26,
@@ -60,9 +52,14 @@ var _group3 = new pxlui_group("50","75",[
 ],{width: 150, height: 60, halign: fa_center, valign: fa_bottom, sprite_index: spr_pxlui_button,image_speed: 0});
 
 pxlui.add_page("DemoPage",[
+	new pxlui_sprite(15,15,spr_pxlui_logo,0),
+	new pxlui_text(15 + 120 + 15, 15,"Welcome to PXLUI 2.0.0 Alpha",{xscale: 2, yscale: 2}),
+	new pxlui_text(15 + 120 + 15, 50,"This is a work in progress ui system built for GML. It's intention is to create a more flexible UI system with powerful styling & animation configurations.",{
+		width: 450,
+		color: #606060,
+	}),
 	_group1,
-	_group2,
-	_group3
+	_group2
 ]);
 
 pxlui.load_page("DemoPage");
